@@ -107,7 +107,7 @@ async function main() {
         commercialId: commercial1.id,
         dateDebut: new Date(Date.now() - i * 24 * 60 * 60 * 1000), // sequential days in the past
         objet: objets[i % objets.length],
-        commentaire: `Visite de routine numéro ${i + 1} chez ${client.raisonSociale}.`,
+        commentaire: `Visite de routine numéro ${i + 1} chez ${client.companyName}.`,
         statutCommande: i % 2 === 0 ? 'COMMANDE' : 'NON_COMMANDE',
         raisonNonCommande: i % 2 === 0 ? null : 'TROP_STOCK',
         problemesConstates: i % 4 === 0 ? 'STOCK' : null,
@@ -125,7 +125,7 @@ async function main() {
         commercialId: commercial2.id,
         dateDebut: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
         objet: objets[(i + 2) % objets.length],
-        commentaire: `Visite et contact avec ${client.contactPrincipal}.`,
+        commentaire: `Visite et suivi chez ${client.companyName}.`,
         statutCommande: i % 3 === 0 ? 'COMMANDE' : 'NON_COMMANDE',
         raisonNonCommande: i % 3 === 0 ? null : 'PRIX_ELEVE',
         problemesConstates: null,

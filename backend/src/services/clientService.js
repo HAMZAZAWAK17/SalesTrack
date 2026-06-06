@@ -20,13 +20,13 @@ async function getAllClients({
 
   // 1. Role-based security filtering
   if (currentUser.role === 'COMMERCIAL') {
+    // COMMERCIAL only sees their own assigned clients
     where.assignedTo = currentUser.id;
   } else if (currentUser.role === 'MANAGER') {
-    where.OR = [
-      { assignedTo: currentUser.id },
-      { commercial: { managerId: currentUser.id } }
-    ];
+    // MANAGER sees all clients assigned to commercials in their team
+    where.commercial = { managerId: currentUser.id };
   }
+  // ADMIN: no restriction — sees all clients
 
   // 2. Input search & filters
   if (code && code.trim() !== '') {
@@ -60,11 +60,11 @@ async function getAllClients({
   if (assignedTo && assignedTo.trim() !== '') {
     const parsedAssigned = Number(assignedTo);
     if (currentUser.role === 'ADMIN') {
+      // Admin can filter by any commercial
       where.assignedTo = parsedAssigned;
     } else if (currentUser.role === 'MANAGER') {
-      // A manager can only filter for a commercial if they are the manager
-      where.assignedTo = parsedAssigned;
-      where.commercial = { managerId: currentUser.id };
+      // Manager can filter by a specific commercial only if they are their team member
+      where.commercial = { id: parsedAssigned, managerId: currentUser.id };
     }
   }
 
@@ -297,10 +297,7 @@ async function getUniqueCities(currentUser) {
   if (currentUser.role === 'COMMERCIAL') {
     where.assignedTo = currentUser.id;
   } else if (currentUser.role === 'MANAGER') {
-    where.OR = [
-      { assignedTo: currentUser.id },
-      { commercial: { managerId: currentUser.id } }
-    ];
+    where.commercial = { managerId: currentUser.id };
   }
 
   const result = await prisma.client.findMany({

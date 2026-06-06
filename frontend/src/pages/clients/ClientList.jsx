@@ -36,7 +36,7 @@ export default function ClientList() {
 
   // Pagination states
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Data states
   const [clients, setClients] = useState([]);
@@ -250,15 +250,28 @@ export default function ClientList() {
         {/* Dashboard Title & Actions */}
         <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-2">
           <div>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'extrabold' }}>
-              Gestion des Clients
-            </Typography>
+            <div className="flex items-center gap-3">
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 'extrabold' }}>
+                Gestion des Clients
+              </Typography>
+              {!loading && (
+                <span className={`px-2.5 py-1 rounded-xl text-xs font-extrabold ${
+                  theme === 'dark' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/25' : 'bg-indigo-50 text-indigo-600 border border-indigo-200'
+                }`}>
+                  {totalClients} client{totalClients !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Consultez, recherchez et gérez les comptes clients de votre secteur de vente.
+              {currentUser?.role === 'COMMERCIAL'
+                ? 'Vos clients affectés dans votre portefeuille.'
+                : currentUser?.role === 'MANAGER'
+                ? "Clients de votre équipe commerciale."
+                : 'Consultez, recherchez et gérez tous les comptes clients.'}
             </Typography>
           </div>
           
-          {isAdmin && (
+          {isAdmin ? (
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -277,6 +290,15 @@ export default function ClientList() {
             >
               Créer un client
             </Button>
+          ) : (
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold ${
+              theme === 'dark' ? 'border-slate-700 text-slate-400 bg-slate-800/40' : 'border-slate-200 text-slate-500 bg-slate-50'
+            }`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Création réservée à l'Admin
+            </div>
           )}
         </Box>
 
@@ -324,7 +346,7 @@ export default function ClientList() {
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[5, 10, 25]}
+                rowsPerPageOptions={[10, 25, 50]}
                 labelRowsPerPage="Lignes par page :"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`}
                 sx={{

@@ -72,6 +72,47 @@ async function login(req, res) {
   }
 }
 
+async function refreshToken(req, res) {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'Refresh token requis.' });
+    }
+
+    const secret = process.env.JWT_SECRET || 'super_secret_sales_track_token_key_123456!';
+    const decoded = jwt.verify(token, secret);
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Utilisateur non trouvé.' });
+    }
+
+    const newAccessToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      secret,
+      { expiresIn: '15m' }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { userId: user.id },
+      secret,
+      { expiresIn: '7d' }
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+      }
+    });
+  } catch (error) {
+    return res.status(403).json({ success: false, error: 'Token invalide ou expiré.' });
+  }
+}
+
 module.exports = {
   login,
+  refreshToken
 };

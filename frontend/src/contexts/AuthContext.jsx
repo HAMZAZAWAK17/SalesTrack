@@ -49,17 +49,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.login(email, password);
       if (response.success) {
-        const { accessToken, user: userData } = response.data;
+        const { accessToken, refreshToken, user: userData } = response.data;
         
         setToken(accessToken);
         setUser(userData);
         
+        // api.js already stores both tokens during login, but we also set them
+        // here to ensure the context state and localStorage stay in sync.
         localStorage.setItem('salestrack_token', accessToken);
+        localStorage.setItem('salestrack_refresh_token', refreshToken);
         localStorage.setItem('salestrack_user', JSON.stringify(userData));
         return { success: true };
       }
     } catch (error) {
-      console.error('Login failed in AuthContext:', error);
       return { 
         success: false, 
         error: error.message || 'Identifiants invalides.' 
@@ -71,6 +73,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('salestrack_token');
+    localStorage.removeItem('salestrack_refresh_token');
     localStorage.removeItem('salestrack_user');
   };
 

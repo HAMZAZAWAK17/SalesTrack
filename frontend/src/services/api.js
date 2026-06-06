@@ -10,7 +10,8 @@ const api = axios.create({
   },
 });
 
-// Axios Request Interceptor to attach the JWT token automatically from local storage
+// ─── Request Interceptor ─────────────────────────────────────────────────────
+// Attach the access token from localStorage to every request automatically
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('salestrack_token');
@@ -19,26 +20,119 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  (error) => Promise.reject(error)
+);
+
+// ─── Response Interceptor ────────────────────────────────────────────────────
+// When a 401 is received, attempt a silent token refresh using the stored
+// refresh token. If the refresh succeeds the original request is retried.
+// If the refresh fails, the user is logged out.
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only handle 401 errors, and avoid infinite loops on the refresh endpoint
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/auth/refresh') &&
+      !originalRequest.url.includes('/auth/login')
+    ) {
+      if (isRefreshing) {
+        // Queue subsequent requests while a refresh is in progress
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const storedRefreshToken = localStorage.getItem('salestrack_refresh_token');
+
+      if (!storedRefreshToken) {
+        // No refresh token → force logout
+        isRefreshing = false;
+        localStorage.removeItem('salestrack_token');
+        localStorage.removeItem('salestrack_refresh_token');
+        localStorage.removeItem('salestrack_user');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      try {
+        const refreshResponse = await axios.post(`${API_URL}/auth/refresh`, {
+          token: storedRefreshToken,
+        });
+
+        if (refreshResponse.data.success) {
+          const { accessToken, refreshToken } = refreshResponse.data.data;
+
+          localStorage.setItem('salestrack_token', accessToken);
+          localStorage.setItem('salestrack_refresh_token', refreshToken);
+
+          api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+          processQueue(null, accessToken);
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        // Refresh failed → force logout
+        localStorage.removeItem('salestrack_token');
+        localStorage.removeItem('salestrack_refresh_token');
+        localStorage.removeItem('salestrack_user');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
 
-/**
- * Authentication service
- */
+// ─── Authentication ───────────────────────────────────────────────────────────
+
 export const login = async (email, password) => {
   try {
     const response = await api.post('/auth/login', { email, password });
+    if (response.data.success) {
+      const { accessToken, refreshToken } = response.data.data;
+      // Store both tokens
+      localStorage.setItem('salestrack_token', accessToken);
+      localStorage.setItem('salestrack_refresh_token', refreshToken);
+    }
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Une erreur est survenue lors de la connexion.');
   }
 };
 
-/**
- * User services (Admin only)
- */
+// ─── Users ────────────────────────────────────────────────────────────────────
+
 export const getUsers = async ({ name = '', email = '', role = '', page = 1, limit = 10 } = {}) => {
   try {
     const response = await api.get('/users', {
@@ -99,9 +193,8 @@ export const deleteUser = async (id) => {
   }
 };
 
-/**
- * Client services
- */
+// ─── Clients ──────────────────────────────────────────────────────────────────
+
 export const getClients = async ({
   name = '',
   code = '',
@@ -171,4 +264,3 @@ export const getCities = async () => {
     throw new Error(error.response?.data?.error || 'Erreur lors du chargement des villes.');
   }
 };
-
