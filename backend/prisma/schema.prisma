@@ -1,0 +1,141 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  firstName    String     @map("first_name")
+  lastName     String     @map("last_name")
+  phone        String?
+  role         String     // ADMIN, MANAGER, COMMERCIAL
+  equipe       String?    // Text field for team
+  managerId    Int?       @map("manager_id")
+  manager      User?      @relation("UserManager", fields: [managerId], references: [id])
+  subordinates User[]     @relation("UserManager")
+  
+  clients      Client[]
+  visites      Visite[]
+  commandes    Commande[]
+  photos       Photo[]
+  
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Client {
+  id               Int        @id @default(autoincrement())
+  code             String     @unique
+  raisonSociale    String     @map("raison_sociale")
+  contactPrincipal String     @map("contact_principal")
+  telephone        String
+  email            String
+  adresse          String
+  ville            String
+  secteur          String
+  canal            String     // ON_TRADE, OFF_TRADE
+  categorie        String     // CHR, HOTEL, etc.
+  statut           String     // ACTIF, INACTIF, PROSPECT
+  commercialId     Int        @map("commercial_id")
+  commercial       User       @relation(fields: [commercialId], references: [id])
+  latitude         Float?
+  longitude        Float?
+  notesInternes    String?    @map("notes_internes")
+  
+  visites          Visite[]
+  commandes        Commande[]
+  photos           Photo[]
+  
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  @@map("clients")
+}
+
+model Visite {
+  id                Int        @id @default(autoincrement())
+  clientId          Int        @map("client_id")
+  client            Client     @relation(fields: [clientId], references: [id])
+  commercialId      Int        @map("commercial_id")
+  commercial        User       @relation(fields: [commercialId], references: [id])
+  dateDebut         DateTime   @default(now()) @map("date_debut")
+  objet             String     // PRISE_COMMANDE, etc.
+  commentaire       String
+  statutCommande    String     @map("statut_commande") // COMMANDE, NON_COMMANDE
+  raisonNonCommande String?    @map("raison_non_commande")
+  problemesConstates String?   @map("problemes_constates")
+  latitude          Float?
+  longitude         Float?
+  
+  commandes         Commande[]
+  photos            Photo[]
+  
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  @@map("visites")
+}
+
+model Commande {
+  id            Int            @id @default(autoincrement())
+  clientId      Int            @map("client_id")
+  client        Client         @relation(fields: [clientId], references: [id])
+  commercialId  Int            @map("commercial_id")
+  commercial    User           @relation(fields: [commercialId], references: [id])
+  visiteId      Int?           @map("visite_id")
+  visite        Visite?        @relation(fields: [visiteId], references: [id])
+  type          String         // COMMANDE, DEVIS
+  statut        String         // BROUILLON, EN_ATTENTE, etc.
+  totalHT       Float          @map("total_ht")
+  
+  lignes        LigneCommande[]
+  
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@map("commandes")
+}
+
+model LigneCommande {
+  id              Int      @id @default(autoincrement())
+  commandeId      Int      @map("commande_id")
+  commande        Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+  designation     String
+  reference       String
+  conditionnement String
+  quantite        Int
+  prixUnitaireHT  Float    @map("prix_unitaire_ht")
+  remise          Float    @default(0)
+  totalLigneHT    Float    @map("total_ligne_ht")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("ligne_commandes")
+}
+
+model Photo {
+  id           Int      @id @default(autoincrement())
+  visiteId     Int      @map("visite_id")
+  visite       Visite   @relation(fields: [visiteId], references: [id], onDelete: Cascade)
+  commercialId Int      @map("commercial_id")
+  commercial   User     @relation(fields: [commercialId], references: [id])
+  clientId     Int      @map("client_id")
+  client       Client   @relation(fields: [clientId], references: [id])
+  cheminFichier String   @map("chemin_fichier")
+  legende      String?
+  latitude     Float?
+  longitude    Float?
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("photos")
+}
