@@ -22,6 +22,7 @@ model User {
   
   clients      Client[]
   visites      Visite[]
+  visits       Visit[]
   commandes    Commande[]
   photos       Photo[]
   
@@ -47,6 +48,7 @@ model Client {
   notes               String?
   
   visites             Visite[]
+  visits              Visit[]
   commandes           Commande[]
   photos              Photo[]
   
@@ -135,3 +137,23 @@ model Photo {
 
   @@map("photos")
 }
+
+model Visit {
+  id             Int       @id @default(autoincrement())
+  clientId       Int       @map("client_id")
+  client         Client    @relation(fields: [clientId], references: [id])
+  userId         Int       @map("user_id")
+  commercial     User      @relation(fields: [userId], references: [id])
+  subject        String    // ORDER, CUSTOMER_FOLLOW_UP, etc.
+  comment        String?
+  status         String    // ORDER_PLACED, NO_ORDER
+  noOrderReason  String?   @map("no_order_reason") // STOCK_NOT_SOLD, etc.
+  latitude       Float?
+  longitude      Float?
+  
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("visits")
+}
+

@@ -11,27 +11,42 @@ import ClientList from './pages/clients/ClientList';
 import ClientCreate from './pages/clients/ClientCreate';
 import ClientEdit from './pages/clients/ClientEdit';
 import ClientDetails from './pages/clients/ClientDetails';
-import { Box, Typography, Container, Button, Paper } from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
-import LogoutIcon from '@mui/icons-material/Logout';
+
+// Layout & Dashboard Imports
+import DashboardLayout from './components/DashboardLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManagerDashboard from './pages/manager/ManagerDashboard';
+import CommercialDashboard from './pages/commercial/CommercialDashboard';
+
+// Visits Imports
+import VisitList from './pages/visits/VisitList';
+import VisitCreate from './pages/visits/VisitCreate';
+import VisitDetails from './pages/visits/VisitDetails';
+
+// Orders Imports
+import OrderList from './pages/orders/OrderList';
+import OrderCreate from './pages/orders/OrderCreate';
+import OrderDetails from './pages/orders/OrderDetails';
+
+import { Box, Typography } from '@mui/material';
 import './App.css';
 
 function AppRoutes() {
-  const { isAuthenticated, user, loading, logoutUser, theme } = useAuth();
+  const { isAuthenticated, user, loading, theme } = useAuth();
 
   // Create a customized Material UI theme dynamically
   const muiTheme = createTheme({
     palette: {
       mode: theme,
       primary: {
-        main: theme === 'dark' ? '#6366f1' : '#4f46e5', // Indigo
+        main: theme === 'dark' ? '#dfb15b' : '#b07c1b', // Gold
       },
       secondary: {
-        main: theme === 'dark' ? '#a855f7' : '#7c3aed', // Purple
+        main: theme === 'dark' ? '#f59e0b' : '#d97706', // Amber
       },
       background: {
-        default: theme === 'dark' ? '#0b0f19' : '#f8fafc',
-        paper: theme === 'dark' ? '#111827' : '#ffffff',
+        default: theme === 'dark' ? '#040a17' : '#f8fafc', // Deep Navy
+        paper: theme === 'dark' ? '#0b1528' : '#ffffff', // Dark blue slate
       },
       text: {
         primary: theme === 'dark' ? '#f8fafc' : '#0f172a',
@@ -59,7 +74,7 @@ function AppRoutes() {
           root: {
             borderRadius: 10,
             textTransform: 'none',
-            fontWeight: 700,
+            fontWeight: 750,
           },
         },
       },
@@ -93,32 +108,68 @@ function AppRoutes() {
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
       
-      {/* 1. Not Logged In: show Login */}
       {!isAuthenticated ? (
         <Routes>
           <Route path="*" element={<Login />} />
         </Routes>
-      ) : user && user.role === 'ADMIN' ? (
-        /* 2. ADMIN User: show Admin Users & Clients Routes */
-        <Routes>
-          <Route path="/users" element={<UserList />} />
-          <Route path="/users/create" element={<UserCreate />} />
-          <Route path="/users/edit/:id" element={<UserEdit />} />
-          <Route path="/users/:id" element={<UserDetails />} />
-          <Route path="/clients" element={<ClientList />} />
-          <Route path="/clients/create" element={<ClientCreate />} />
-          <Route path="/clients/edit/:id" element={<ClientEdit />} />
-          <Route path="/clients/:id" element={<ClientDetails />} />
-          <Route path="*" element={<Navigate to="/users" replace />} />
-        </Routes>
       ) : (
-        /* 3. MANAGER or COMMERCIAL: show Clients Routes ONLY */
-        <Routes>
-          <Route path="/clients" element={<ClientList />} />
-          <Route path="/clients/edit/:id" element={<ClientEdit />} />
-          <Route path="/clients/:id" element={<ClientDetails />} />
-          <Route path="*" element={<Navigate to="/clients" replace />} />
-        </Routes>
+        <DashboardLayout>
+          <Routes>
+            {/* Dynamic Dashboard Landing Redirector */}
+            <Route
+              path="/dashboard"
+              element={
+                user?.role === 'ADMIN' ? (
+                  <AdminDashboard />
+                ) : user?.role === 'MANAGER' ? (
+                  <ManagerDashboard />
+                ) : (
+                  <CommercialDashboard />
+                )
+              }
+            />
+
+            {/* Clients Management Routes */}
+            <Route path="/clients" element={<ClientList />} />
+            <Route
+              path="/clients/create"
+              element={user?.role === 'ADMIN' ? <ClientCreate /> : <Navigate to="/clients" replace />}
+            />
+            <Route path="/clients/edit/:id" element={<ClientEdit />} />
+            <Route path="/clients/:id" element={<ClientDetails />} />
+
+            {/* Users Management Routes (Admin Only) */}
+            <Route
+              path="/users"
+              element={user?.role === 'ADMIN' ? <UserList /> : <Navigate to="/dashboard" replace />}
+            />
+            <Route
+              path="/users/create"
+              element={user?.role === 'ADMIN' ? <UserCreate /> : <Navigate to="/users" replace />}
+            />
+            <Route
+              path="/users/edit/:id"
+              element={user?.role === 'ADMIN' ? <UserEdit /> : <Navigate to="/users" replace />}
+            />
+            <Route
+              path="/users/:id"
+              element={user?.role === 'ADMIN' ? <UserDetails /> : <Navigate to="/users" replace />}
+            />
+
+            {/* Visits Management Routes */}
+            <Route path="/visits" element={<VisitList />} />
+            <Route path="/visits/create" element={<VisitCreate />} />
+            <Route path="/visits/:id" element={<VisitDetails />} />
+
+            {/* Orders & Quotes Management Routes */}
+            <Route path="/orders" element={<OrderList />} />
+            <Route path="/orders/create" element={<OrderCreate />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
+
+            {/* Fallback unknown routes */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </DashboardLayout>
       )}
     </ThemeProvider>
   );

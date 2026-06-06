@@ -264,3 +264,125 @@ export const getCities = async () => {
     throw new Error(error.response?.data?.error || 'Erreur lors du chargement des villes.');
   }
 };
+
+// ─── Dashboard Stats ──────────────────────────────────────────────────────────
+
+export const getDashboardStats = async () => {
+  try {
+    const response = await api.get('/dashboard/stats');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la récupération des statistiques.');
+  }
+};
+
+// ─── Visites ──────────────────────────────────────────────────────────────────
+
+export const getVisits = async ({ clientId = '', commercialId = '', status = '', page = 1, limit = 10 } = {}) => {
+  try {
+    const response = await api.get('/visites', {
+      params: { clientId, commercialId, status, page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la récupération des visites.');
+  }
+};
+
+export const getVisitById = async (id) => {
+  try {
+    const response = await api.get(`/visites/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors du chargement des détails de la visite.');
+  }
+};
+
+export const createVisit = async (visitData) => {
+  try {
+    const response = await api.post('/visites', visitData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de l\'enregistrement de la visite.');
+  }
+};
+
+export const deleteVisit = async (id) => {
+  try {
+    const response = await api.delete(`/visites/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la suppression de la visite.');
+  }
+};
+
+export const uploadVisitPhoto = async (formData) => {
+  try {
+    const response = await api.post('/visites/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de l\'envoi de la photo.');
+  }
+};
+
+// ─── Commandes ────────────────────────────────────────────────────────────────
+
+export const getCommandes = async ({ clientId = '', commercialId = '', type = '', status = '', page = 1, limit = 10 } = {}) => {
+  try {
+    const response = await api.get('/commandes', {
+      params: { clientId, commercialId, type, status, page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la récupération des commandes.');
+  }
+};
+
+export const getCommandeById = async (id) => {
+  try {
+    const response = await api.get(`/commandes/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors du chargement des détails de la commande.');
+  }
+};
+
+export const createCommande = async (commandeData) => {
+  try {
+    const response = await api.post('/commandes', commandeData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la création de la commande.');
+  }
+};
+
+export const updateCommande = async (id, commandeData) => {
+  try {
+    const response = await api.put(`/commandes/${id}`, commandeData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la mise à jour de la commande.');
+  }
+};
+
+export const deleteCommande = async (id) => {
+  try {
+    const response = await api.delete(`/commandes/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la suppression de la commande.');
+  }
+};
+
+export const cleanupPhotos = async () => {
+  try {
+    const response = await api.post('/visites/cleanup-photos', {});
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors du nettoyage des photos.');
+  }
+};
