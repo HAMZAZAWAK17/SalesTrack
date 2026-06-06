@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.get('/', commandeController.getCommandes);
+router.get('/export', commandeController.exportCommandes);
 router.get('/:id', commandeController.getCommande);
 router.post('/', commandeController.create);
 router.put('/:id', commandeController.update);

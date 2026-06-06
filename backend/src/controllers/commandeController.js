@@ -230,10 +230,58 @@ async function deleteCommande(req, res) {
   }
 }
 
+async function exportCommandes(req, res) {
+  try {
+    const { clientId, commercialId, type, status } = req.query;
+
+    const result = await commandeService.getAllCommandes({
+      clientId,
+      commercialId,
+      type,
+      status,
+      page: 1,
+      limit: 100000
+    }, req.user);
+
+    const csvContent = convertCommandesToCSV(result.commandes);
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="commandes_export.csv"');
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('exportCommandes controller error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne lors de l\'export des commandes.',
+      code: 'SERVER_ERROR'
+    });
+  }
+}
+
+function convertCommandesToCSV(commandes) {
+  const headers = ['ID', 'Date', 'Client Code', 'Client Nom', 'Commercial', 'Type', 'Statut', 'Total HT'];
+  const rows = commandes.map(cmd => [
+    cmd.id,
+    new Date(cmd.createdAt).toISOString(),
+    cmd.client?.code || '',
+    cmd.client?.companyName || '',
+    cmd.commercial ? `${cmd.commercial.firstName} ${cmd.commercial.lastName}` : '',
+    cmd.type,
+    cmd.statut,
+    cmd.totalHT
+  ]);
+  
+  return [
+    headers.join(','),
+    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(','))
+  ].join('\n');
+}
+
 module.exports = {
   getCommandes,
   getCommande,
   create,
   update,
-  deleteCommande
+  deleteCommande,
+  exportCommandes
 };

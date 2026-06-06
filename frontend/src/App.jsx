@@ -22,6 +22,7 @@ import CommercialDashboard from './pages/commercial/CommercialDashboard';
 import VisitList from './pages/visits/VisitList';
 import VisitCreate from './pages/visits/VisitCreate';
 import VisitDetails from './pages/visits/VisitDetails';
+import VisitEdit from './pages/visits/VisitEdit';
 
 // Orders Imports
 import OrderList from './pages/orders/OrderList';
@@ -160,6 +161,7 @@ function AppRoutes() {
             <Route path="/visits" element={<VisitList />} />
             <Route path="/visits/create" element={<VisitCreate />} />
             <Route path="/visits/:id" element={<VisitDetails />} />
+            <Route path="/visits/edit/:id" element={<VisitEdit />} />
 
             {/* Orders & Quotes Management Routes */}
             <Route path="/orders" element={<OrderList />} />

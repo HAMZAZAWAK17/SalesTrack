@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 // Create a single Axios instance for the entire app
 const api = axios.create({
@@ -316,6 +316,15 @@ export const deleteVisit = async (id) => {
   }
 };
 
+export const updateVisit = async (id, visitData) => {
+  try {
+    const response = await api.put(`/visites/${id}`, visitData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors de la modification de la visite.');
+  }
+};
+
 export const uploadVisitPhoto = async (formData) => {
   try {
     const response = await api.post('/visites/upload', formData, {
@@ -326,6 +335,21 @@ export const uploadVisitPhoto = async (formData) => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Erreur lors de l\'envoi de la photo.');
+  }
+};
+
+export const importClients = async (formData) => {
+  try {
+    const response = await api.post('/clients/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    const err = new Error(error.response?.data?.error || 'Erreur lors de l\'import des clients.');
+    err.errors = error.response?.data?.errors;
+    throw err;
   }
 };
 

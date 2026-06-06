@@ -132,6 +132,31 @@ export default function OrderList() {
     setToast({ ...toast, open: false });
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem('salestrack_token');
+      const response = await fetch(`http://localhost:3001/api/commandes/export?clientId=${clientId}&commercialId=${commercialId}&type=${type}&status=${status}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error("Erreur de téléchargement du fichier.");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `commandes_export_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setToast({ open: true, message: 'Export CSV réussi !', severity: 'success' });
+    } catch (err) {
+      console.error(err);
+      setToast({ open: true, message: "Erreur lors de l'export CSV.", severity: 'error' });
+    }
+  };
+
   const getStatusStyle = (stat) => {
     switch (stat) {
       case 'VALIDEE':
@@ -173,6 +198,20 @@ export default function OrderList() {
             <RefreshIcon fontSize="small" />
           </button>
           
+          <Button
+            variant="outlined"
+            onClick={handleExportCSV}
+            sx={{
+              minHeight: 48,
+              borderRadius: 2.5,
+              textTransform: 'none',
+              fontWeight: 'extrabold',
+              px: 3,
+            }}
+          >
+            Exporter CSV
+          </Button>
+
           <Button
             variant="contained"
             startIcon={<AddIcon />}

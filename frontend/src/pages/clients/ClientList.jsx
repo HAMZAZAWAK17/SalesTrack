@@ -163,6 +163,66 @@ export default function ClientList() {
     setToast({ ...toast, open: false });
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem('salestrack_token');
+      const response = await fetch(`http://localhost:3001/api/clients/export?name=${nameSearch}&code=${codeSearch}&city=${cityFilter}&distributionChannel=${channelFilter}&category=${categoryFilter}&status=${statusFilter}&assignedTo=${commercialFilter}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error("Erreur de téléchargement du fichier.");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `clients_export_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      setToast({ open: true, message: 'Export CSV réussi !', severity: 'success' });
+    } catch (err) {
+      console.error(err);
+      setToast({ open: true, message: "Erreur lors de l'export CSV.", severity: 'error' });
+    }
+  };
+
+  const handleImportCSV = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setLoading(true);
+    try {
+      const res = await api.importClients(formData);
+      if (res.success) {
+        setToast({
+          open: true,
+          message: res.data.message || 'Clients importés avec succès.',
+          severity: 'success'
+        });
+        loadClients();
+      }
+    } catch (err) {
+      console.error(err);
+      let detailMsg = err.message;
+      if (err.errors && Array.isArray(err.errors)) {
+        detailMsg = err.errors.map(e => `Ligne ${e.row}: ${Object.values(e.errors).join(', ')}`).join(' | ');
+      }
+      setToast({
+        open: true,
+        message: `Erreur d'import : ${detailMsg.substring(0, 150)}...`,
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className={`min-h-screen w-full p-4 md:p-8 relative overflow-hidden transition-colors duration-300 font-sans ${
       theme === 'dark' ? 'bg-slate-950 text-slate-100 grid-pattern' : 'bg-slate-50 text-slate-800 grid-pattern-light'
@@ -271,35 +331,76 @@ export default function ClientList() {
             </Typography>
           </div>
           
-          {isAdmin ? (
+          <Box className="flex items-center gap-2 flex-wrap">
             <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/clients/create')}
+              variant="outlined"
+              onClick={handleExportCSV}
               sx={{
                 minHeight: 48,
                 borderRadius: 2.5,
                 textTransform: 'none',
                 fontWeight: 'extrabold',
                 px: 3,
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.25)',
-                '&:hover': {
-                  boxShadow: '0 6px 20px rgba(99, 102, 241, 0.35)'
-                }
               }}
             >
-              Créer un client
+              Exporter CSV
             </Button>
-          ) : (
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold ${
-              theme === 'dark' ? 'border-slate-700 text-slate-400 bg-slate-800/40' : 'border-slate-200 text-slate-500 bg-slate-50'
-            }`}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Création réservée à l'Admin
-            </div>
-          )}
+
+            {isAdmin ? (
+              <>
+                <input
+                  type="file"
+                  accept=".csv"
+                  id="import-clients-csv"
+                  className="hidden"
+                  onChange={handleImportCSV}
+                />
+                <label htmlFor="import-clients-csv">
+                  <Button
+                    component="span"
+                    variant="outlined"
+                    sx={{
+                      minHeight: 48,
+                      borderRadius: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 'extrabold',
+                      px: 3,
+                    }}
+                  >
+                    Importer CSV
+                  </Button>
+                </label>
+
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => navigate('/clients/create')}
+                  sx={{
+                    minHeight: 48,
+                    borderRadius: 2.5,
+                    textTransform: 'none',
+                    fontWeight: 'extrabold',
+                    px: 3,
+                    boxShadow: '0 4px 14px rgba(99, 102, 241, 0.25)',
+                    '&:hover': {
+                      boxShadow: '0 6px 20px rgba(99, 102, 241, 0.35)'
+                    }
+                  }}
+                >
+                  Créer un client
+                </Button>
+              </>
+            ) : (
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold ${
+                theme === 'dark' ? 'border-slate-700 text-slate-400 bg-slate-800/40' : 'border-slate-200 text-slate-500 bg-slate-50'
+              }`}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Création réservée à l'Admin
+              </div>
+            )}
+          </Box>
         </Box>
 
         {/* Filters */}

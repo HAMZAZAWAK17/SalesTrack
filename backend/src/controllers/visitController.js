@@ -6,55 +6,69 @@ const createVisitSchema = z.object({
   clientId: z.any().transform(val => Number(val)).refine(val => !isNaN(val) && val > 0, {
     message: "Le client est obligatoire."
   }),
-  subject: z.enum([
-    'ORDER', 'CUSTOMER_FOLLOW_UP', 'COLLECTION', 'BRAND_VISIBILITY',
-    'PRODUCT_PLACEMENT', 'NEGOTIATION', 'DELIVERY', 'RELAUNCH', 'OTHER'
+  objet: z.enum([
+    'PRISE_COMMANDE', 'SUIVI_CLIENT', 'RECOUVREMENT', 'VISIBILITE_MARQUE',
+    'IMPLANTATION_PRODUIT', 'NEGOCIATION', 'LIVRAISON', 'RELANCE', 'AUTRE'
   ], {
     errorMap: () => ({ message: "Objet de visite invalide." })
   }),
-  comment: z.string().optional().nullable(),
-  status: z.enum(['ORDER_PLACED', 'NO_ORDER'], {
-    errorMap: () => ({ message: "Le statut doit être ORDER_PLACED ou NO_ORDER." })
+  commentaire: z.string().optional().nullable(),
+  statutCommande: z.enum(['COMMANDE', 'NON_COMMANDE'], {
+    errorMap: () => ({ message: "Le statut doit être COMMANDE ou NON_COMMANDE." })
   }),
-  noOrderReason: z.enum([
-    'STOCK_NOT_SOLD', 'OVERSTOCK', 'LOW_ACTIVITY', 'SUPPLIER_CHANGE',
-    'PRICE_TOO_HIGH', 'CUSTOMER_ABSENT', 'WAITING_FOR_APPROVAL', 'DELIVERY_ISSUE', 'OTHER'
+  raisonNonCommande: z.enum([
+    'STOCK_NON_ECOULE', 'TROP_STOCK', 'BAISSE_ACTIVITE', 'CHANGEMENT_FOURNISSEUR',
+    'PRIX_ELEVE', 'CLIENT_ABSENT', 'ATTENTE_VALIDATION', 'PROBLEME_LIVRAISON', 'AUTRE'
   ]).optional().nullable(),
+  problemesConstates: z.string().optional().nullable(),
   latitude: z.any().transform(val => val ? Number(val) : null).optional().nullable(),
-  longitude: z.any().transform(val => val ? Number(val) : null).optional().nullable()
+  longitude: z.any().transform(val => val ? Number(val) : null).optional().nullable(),
+  photos: z.array(z.object({
+    cheminFichier: z.string(),
+    legende: z.string().optional().nullable(),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
+  })).optional()
 });
 
 const updateVisitSchema = z.object({
   clientId: z.any().transform(val => Number(val)).refine(val => !isNaN(val) && val > 0).optional(),
-  subject: z.enum([
-    'ORDER', 'CUSTOMER_FOLLOW_UP', 'COLLECTION', 'BRAND_VISIBILITY',
-    'PRODUCT_PLACEMENT', 'NEGOTIATION', 'DELIVERY', 'RELAUNCH', 'OTHER'
+  objet: z.enum([
+    'PRISE_COMMANDE', 'SUIVI_CLIENT', 'RECOUVREMENT', 'VISIBILITE_MARQUE',
+    'IMPLANTATION_PRODUIT', 'NEGOCIATION', 'LIVRAISON', 'RELANCE', 'AUTRE'
   ]).optional(),
-  comment: z.string().optional().nullable(),
-  status: z.enum(['ORDER_PLACED', 'NO_ORDER']).optional(),
-  noOrderReason: z.enum([
-    'STOCK_NOT_SOLD', 'OVERSTOCK', 'LOW_ACTIVITY', 'SUPPLIER_CHANGE',
-    'PRICE_TOO_HIGH', 'CUSTOMER_ABSENT', 'WAITING_FOR_APPROVAL', 'DELIVERY_ISSUE', 'OTHER'
+  commentaire: z.string().optional().nullable(),
+  statutCommande: z.enum(['COMMANDE', 'NON_COMMANDE']).optional(),
+  raisonNonCommande: z.enum([
+    'STOCK_NON_ECOULE', 'TROP_STOCK', 'BAISSE_ACTIVITE', 'CHANGEMENT_FOURNISSEUR',
+    'PRIX_ELEVE', 'CLIENT_ABSENT', 'ATTENTE_VALIDATION', 'PROBLEME_LIVRAISON', 'AUTRE'
   ]).optional().nullable(),
+  problemesConstates: z.string().optional().nullable(),
   latitude: z.any().transform(val => val ? Number(val) : null).optional().nullable(),
-  longitude: z.any().transform(val => val ? Number(val) : null).optional().nullable()
+  longitude: z.any().transform(val => val ? Number(val) : null).optional().nullable(),
+  photos: z.array(z.object({
+    cheminFichier: z.string(),
+    legende: z.string().optional().nullable(),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
+  })).optional()
 });
 
 /**
- * GET /api/visits
+ * GET /api/visites
  */
 async function getVisits(req, res) {
   try {
-    const { clientId, userId, subject, status, date, page, limit } = req.query;
+    const { clientId, commercialId, subject, status, date, page, limit } = req.query;
 
     const result = await visitService.getAllVisits({
       clientId,
-      userId,
+      commercialId,
       subject,
       status,
       date,
       page: page ? Number(page) : 1,
-      limit: limit ? Number(limit) : 10,
+      limit: limit ? Number(limit) : 25,
     }, req.user);
 
     return res.json({
@@ -72,7 +86,7 @@ async function getVisits(req, res) {
 }
 
 /**
- * GET /api/visits/:id
+ * GET /api/visites/:id
  */
 async function getVisit(req, res) {
   try {
@@ -109,7 +123,7 @@ async function getVisit(req, res) {
 }
 
 /**
- * POST /api/visits
+ * POST /api/visites
  */
 async function create(req, res) {
   try {
@@ -156,7 +170,7 @@ async function create(req, res) {
 }
 
 /**
- * PUT /api/visits/:id
+ * PUT /api/visites/:id
  */
 async function update(req, res) {
   try {
@@ -204,7 +218,7 @@ async function update(req, res) {
 }
 
 /**
- * DELETE /api/visits/:id
+ * DELETE /api/visites/:id
  */
 async function deleteVisit(req, res) {
   try {
@@ -232,10 +246,118 @@ async function deleteVisit(req, res) {
   }
 }
 
+/**
+ * POST /api/visites/upload
+ */
+async function uploadPhoto(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'Aucune photo fournie ou format invalide.',
+        code: 'BAD_REQUEST'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        cheminFichier: `/uploads/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    console.error('uploadPhoto controller error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne lors du téléchargement de l\'image.',
+      code: 'SERVER_ERROR'
+    });
+  }
+}
+
+/**
+ * POST /api/visites/cleanup-photos
+ */
+async function cleanupPhotos(req, res) {
+  try {
+    const result = await visitService.cleanupOldPhotos();
+    return res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('cleanupPhotos controller error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne lors du nettoyage des photos.',
+      code: 'SERVER_ERROR'
+    });
+  }
+}
+
+/**
+ * GET /api/visites/export
+ */
+async function exportVisits(req, res) {
+  try {
+    const { clientId, commercialId, subject, status, date } = req.query;
+
+    // Fetch up to 10,000 matches for the export
+    const result = await visitService.getAllVisits({
+      clientId,
+      commercialId,
+      subject,
+      status,
+      date,
+      page: 1,
+      limit: 10000,
+    }, req.user);
+
+    const csvContent = convertVisitsToCSV(result.visits);
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="visites_export.csv"');
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('exportVisits controller error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne lors de l\'export des visites.',
+      code: 'SERVER_ERROR'
+    });
+  }
+}
+
+function convertVisitsToCSV(visits) {
+  const headers = ['ID', 'Date', 'Client Code', 'Client Nom', 'Commercial', 'Objet', 'Statut Commande', 'Raison Non Commande', 'Commentaire', 'Latitude', 'Longitude'];
+  const rows = visits.map(v => [
+    v.id,
+    new Date(v.dateDebut).toISOString(),
+    v.client?.code || '',
+    v.client?.companyName || '',
+    `${v.commercial?.firstName || ''} ${v.commercial?.lastName || ''}`,
+    v.objet,
+    v.statutCommande,
+    v.raisonNonCommande || '',
+    (v.commentaire || '').replace(/"/g, '""').replace(/\n/g, ' '),
+    v.latitude || '',
+    v.longitude || ''
+  ]);
+  
+  // Format as CSV
+  return [
+    headers.join(','),
+    ...rows.map(r => r.map(val => `"${val}"`).join(','))
+  ].join('\n');
+}
+
 module.exports = {
   getVisits,
   getVisit,
   create,
   update,
-  deleteVisit
+  deleteVisit,
+  uploadPhoto,
+  cleanupPhotos,
+  exportVisits
 };
