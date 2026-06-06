@@ -7,6 +7,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Theme state synced with localStorage (default: dark)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('salestrack_theme') || 'dark';
+  });
 
   useEffect(() => {
     // Check if user credentials exist in local storage on load
@@ -19,6 +24,26 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, []);
+
+  // Sync HTML document class list with active theme
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('salestrack_theme', next);
+      return next;
+    });
+  };
 
   const loginUser = async (email, password) => {
     try {
@@ -55,6 +80,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!token,
     isAdminOrManager: user ? (user.role === 'ADMIN' || user.role === 'MANAGER') : false,
+    theme,
+    toggleTheme,
     loginUser,
     logoutUser,
   };

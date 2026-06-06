@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const authRouter = require('./routes/auth');
-const usersRouter = require('./routes/users');
+const userRoutes = require('./routes/userRoutes');
+const clientRouter = require('./routes/clientRoutes');
 const prisma = require('./utils/db');
 
 const app = express();
@@ -16,7 +17,8 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/users', userRoutes);
+app.use('/api/clients', clientRouter);
 
 // Root endpoint for healthcheck
 app.get('/health', async (req, res) => {

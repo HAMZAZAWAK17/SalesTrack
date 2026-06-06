@@ -32,30 +32,26 @@ model User {
 }
 
 model Client {
-  id               Int        @id @default(autoincrement())
-  code             String     @unique
-  raisonSociale    String     @map("raison_sociale")
-  contactPrincipal String     @map("contact_principal")
-  telephone        String
-  email            String
-  adresse          String
-  ville            String
-  secteur          String
-  canal            String     // ON_TRADE, OFF_TRADE
-  categorie        String     // CHR, HOTEL, etc.
-  statut           String     // ACTIF, INACTIF, PROSPECT
-  commercialId     Int        @map("commercial_id")
-  commercial       User       @relation(fields: [commercialId], references: [id])
-  latitude         Float?
-  longitude        Float?
-  notesInternes    String?    @map("notes_internes")
+  id                  Int        @id @default(autoincrement())
+  code                String     @unique
+  companyName         String     @map("company_name")
+  phone               String
+  email               String
+  address             String
+  city                String
+  distributionChannel String     @map("distribution_channel") // ON_TRADE, OFF_TRADE
+  category            String     // HOTEL, RESTAURANT, CAFE, GROCERY, SUPERMARKET, TRADITIONAL, OTHER
+  status              String     // ACTIVE, INACTIVE, PROSPECT
+  assignedTo          Int        @map("assigned_to")
+  commercial          User       @relation(fields: [assignedTo], references: [id])
+  notes               String?
   
-  visites          Visite[]
-  commandes        Commande[]
-  photos           Photo[]
+  visites             Visite[]
+  commandes           Commande[]
+  photos              Photo[]
   
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
 
   @@map("clients")
 }
