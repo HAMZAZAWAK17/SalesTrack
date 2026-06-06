@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function UserDetails() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function UserDetails() {
   useEffect(() => {
     async function loadUserDetails() {
       try {
-        const response = await userService.getUserById(id);
+        const response = await api.getUserById(id);
         if (response.success) {
           setUser(response.data);
         }

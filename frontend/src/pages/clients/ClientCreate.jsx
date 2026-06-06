@@ -4,8 +4,7 @@ import { Container, Paper, Box, Typography, IconButton, Snackbar, Alert } from '
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from '../../contexts/AuthContext';
 import ClientForm from '../../components/clients/ClientForm';
-import * as clientService from '../../services/clientService';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function ClientCreate() {
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ export default function ClientCreate() {
   useEffect(() => {
     async function loadCommercials() {
       try {
-        const response = await userService.getUsers({ role: 'COMMERCIAL', limit: 100 });
+        const response = await api.getUsers({ role: 'COMMERCIAL', limit: 100 });
         if (response.success) {
           setCommercials(response.data.users);
         }
@@ -39,7 +38,7 @@ export default function ClientCreate() {
   const handleSubmit = async (formData) => {
     setSubmitting(true);
     try {
-      const response = await clientService.createClient(formData);
+      const response = await api.createClient(formData);
       if (response.success) {
         setToast({
           open: true,

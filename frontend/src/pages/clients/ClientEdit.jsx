@@ -4,8 +4,7 @@ import { Container, Paper, Box, Typography, IconButton, Snackbar, Alert, Circula
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from '../../contexts/AuthContext';
 import ClientForm from '../../components/clients/ClientForm';
-import * as clientService from '../../services/clientService';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function ClientEdit() {
   const navigate = useNavigate();
@@ -23,8 +22,8 @@ export default function ClientEdit() {
   useEffect(() => {
     async function loadData() {
       try {
-        const clientRes = await clientService.getClientById(id);
-        const commsRes = await userService.getUsers({ role: 'COMMERCIAL', limit: 100 });
+        const clientRes = await api.getClientById(id);
+        const commsRes = await api.getUsers({ role: 'COMMERCIAL', limit: 100 });
 
         if (clientRes.success) {
           const client = clientRes.data;
@@ -66,7 +65,7 @@ export default function ClientEdit() {
   const handleSubmit = async (formData) => {
     setSubmitting(true);
     try {
-      const response = await clientService.updateClient(id, formData);
+      const response = await api.updateClient(id, formData);
       if (response.success) {
         setToast({
           open: true,

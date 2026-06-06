@@ -26,7 +26,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useAuth } from '../../contexts/AuthContext';
-import * as clientService from '../../services/clientService';
+import * as api from '../../services/api';
 
 export default function ClientDetails() {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ export default function ClientDetails() {
   useEffect(() => {
     async function loadDetails() {
       try {
-        const response = await clientService.getClientById(id);
+        const response = await api.getClientById(id);
         if (response.success) {
           setClient(response.data);
         }

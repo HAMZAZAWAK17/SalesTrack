@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import UserTable from '../../components/users/UserTable';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export default function UserList() {
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await userService.getUsers({
+      const response = await api.getUsers({
         name: nameSearch,
         email: emailSearch,
         role: roleFilter,
@@ -93,7 +93,7 @@ export default function UserList() {
 
   const handleDeleteUser = async (id) => {
     try {
-      const response = await userService.deleteUser(id);
+      const response = await api.deleteUser(id);
       if (response.success) {
         setToast({
           open: true,

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import UserForm from '../../components/users/UserForm';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function UserEdit() {
   const navigate = useNavigate();
@@ -21,10 +21,10 @@ export default function UserEdit() {
     async function loadData() {
       try {
         // Fetch specific user details
-        const userResponse = await userService.getUserById(id);
+        const userResponse = await api.getUserById(id);
         
         // Fetch managers list
-        const managersResponse = await userService.getManagers();
+        const managersResponse = await api.getManagers();
 
         if (userResponse.success) {
           // Exclude null values and map password to empty string for edit input
@@ -65,7 +65,7 @@ export default function UserEdit() {
   const handleSubmit = async (formData) => {
     setSubmitting(true);
     try {
-      const response = await userService.updateUser(id, formData);
+      const response = await api.updateUser(id, formData);
       if (response.success) {
         setToast({
           open: true,

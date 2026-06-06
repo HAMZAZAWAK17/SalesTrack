@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import UserForm from '../../components/users/UserForm';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function UserCreate() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function UserCreate() {
   useEffect(() => {
     async function loadManagers() {
       try {
-        const response = await userService.getManagers();
+        const response = await api.getManagers();
         if (response.success) {
           setManagers(response.data);
         }
@@ -37,7 +37,7 @@ export default function UserCreate() {
   const handleSubmit = async (formData) => {
     setSubmitting(true);
     try {
-      const response = await userService.createUser(formData);
+      const response = await api.createUser(formData);
       if (response.success) {
         setToast({
           open: true,

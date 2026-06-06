@@ -14,8 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../../contexts/AuthContext';
 import ClientFilters from '../../components/clients/ClientFilters';
 import ClientTable from '../../components/clients/ClientTable';
-import * as clientService from '../../services/clientService';
-import * as userService from '../../services/userService';
+import * as api from '../../services/api';
 
 export default function ClientList() {
   const navigate = useNavigate();
@@ -51,14 +50,14 @@ export default function ClientList() {
   useEffect(() => {
     async function loadFilterData() {
       try {
-        const citiesRes = await clientService.getCities();
+        const citiesRes = await api.getCities();
         if (citiesRes.success) {
           setCities(citiesRes.data);
         }
 
         // Only load commercials dropdown if admin or manager
         if (currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') {
-          const commsRes = await userService.getUsers({ role: 'COMMERCIAL', limit: 100 });
+          const commsRes = await api.getUsers({ role: 'COMMERCIAL', limit: 100 });
           if (commsRes.success) {
             setCommercials(commsRes.data.users);
           }
@@ -74,7 +73,7 @@ export default function ClientList() {
   const loadClients = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await clientService.getClients({
+      const response = await api.getClients({
         name: nameSearch,
         code: codeSearch,
         city: cityFilter,
@@ -138,7 +137,7 @@ export default function ClientList() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await clientService.deleteClient(id);
+      const response = await api.deleteClient(id);
       if (response.success) {
         setToast({
           open: true,
