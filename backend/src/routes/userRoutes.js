@@ -11,7 +11,13 @@ router.get('/managers', authMiddleware, userController.getManagersList);
 // 2. GET /api/users - Only ADMIN can view users list
 router.get('/', authMiddleware, roleMiddleware(['ADMIN']), userController.getUsers);
 
-// 3. GET /api/users/:id - Only ADMIN can view specific user details
+// 3. GET /api/users/profile - Get current user profile details
+router.get('/profile', authMiddleware, userController.getProfile);
+
+// 3. PUT /api/users/profile - Update current user profile details
+router.put('/profile', authMiddleware, userController.updateProfile);
+
+// 4. GET /api/users/:id - Only ADMIN can view specific user details
 router.get('/:id', authMiddleware, roleMiddleware(['ADMIN']), userController.getUser);
 
 // 4. POST /api/users - Only ADMIN can create users

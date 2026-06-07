@@ -282,6 +282,103 @@ async function getManagersList(req, res) {
   }
 }
 
+/**
+ * GET /api/users/profile
+ */
+async function getProfile(req, res) {
+  try {
+    const userId = req.user.id;
+    const user = await userService.getUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Profil non trouvé.',
+        code: 'NOT_FOUND',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error('getProfile controller error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne du serveur lors de la récupération du profil.',
+      code: 'SERVER_ERROR',
+    });
+  }
+}
+
+/**
+ * PUT /api/users/profile
+ */
+async function updateProfile(req, res) {
+  try {
+    const userId = req.user.id;
+    
+    // Validate profile updates: only allow editing name, email, phone and password.
+    const profileUpdateSchema = z.object({
+      email: z.string().min(1, "L'email est obligatoire.").email("Format d'email invalide.").optional(),
+      firstName: z.string().min(1, "Le prénom est obligatoire.").optional(),
+      lastName: z.string().min(1, "Le nom est obligatoire.").optional(),
+      phone: z.string().min(1, "Le téléphone est obligatoire.").optional(),
+      password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères.").optional().or(z.literal('')),
+    });
+
+    const validationResult = profileUpdateSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const formattedErrors = {};
+      validationResult.error.errors.forEach((err) => {
+        formattedErrors[err.path.join('.')] = err.message;
+      });
+
+      return res.status(400).json({
+        success: false,
+        error: 'Erreur de validation des données.',
+        errors: formattedErrors,
+        code: 'VALIDATION_ERROR',
+      });
+    }
+
+    // Call service to update user profile
+    const updatedUser = await userService.updateUser(userId, validationResult.data);
+
+    return res.json({
+      success: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('updateProfile controller error:', error);
+
+    if (error.statusCode === 404) {
+      return res.status(404).json({
+        success: false,
+        error: error.message,
+        code: 'NOT_FOUND',
+      });
+    }
+    
+    if (error.statusCode === 400) {
+      return res.status(400).json({
+        success: false,
+        error: error.message,
+        code: error.code || 'BAD_REQUEST',
+        errors: error.code === 'EMAIL_ALREADY_EXISTS' ? { email: 'Cet email est déjà utilisé.' } : undefined,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur interne du serveur lors de la mise à jour du profil.',
+      code: 'SERVER_ERROR',
+    });
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -289,4 +386,7 @@ module.exports = {
   update,
   deleteUser,
   getManagersList,
+  getProfile,
+  updateProfile,
 };
+
