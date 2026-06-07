@@ -280,7 +280,7 @@ export default function VisitDetails() {
                 {photos.map((photo) => (
                   <div key={photo.id} className="group relative rounded-xl border border-slate-850 overflow-hidden bg-slate-950">
                     <img
-                      src={`http://localhost:3001${photo.cheminFichier}`}
+                      src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${photo.cheminFichier}`}
                       alt={photo.legende || 'Photo terrain'}
                       className="w-full h-auto object-cover max-h-48 group-hover:scale-103 transition-premium"
                     />

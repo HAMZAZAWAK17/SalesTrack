@@ -107,7 +107,10 @@ export default function DashboardLayout({ children }) {
             </IconButton>
             
             {user && (
-              <Box className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold flex items-center justify-center text-xs">
+              <Box 
+                onClick={() => navigate('/profile')}
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold flex items-center justify-center text-xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              >
                 {user.firstName[0].toUpperCase()}{user.lastName[0].toUpperCase()}
               </Box>
             )}
@@ -187,8 +190,14 @@ export default function DashboardLayout({ children }) {
         {/* Mobile Navigation Footer */}
         {user && (
           <Box className="p-4 border-t border-slate-800/10 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold flex items-center justify-center text-sm">
+            <div 
+              onClick={() => {
+                navigate('/profile');
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-3 cursor-pointer p-1 hover:bg-slate-800/10 dark:hover:bg-slate-900/30 rounded-xl transition-all w-full"
+            >
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold flex items-center justify-center text-sm shrink-0">
                 {user.firstName[0].toUpperCase()}{user.lastName[0].toUpperCase()}
               </div>
               <div className="overflow-hidden">

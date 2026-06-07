@@ -28,6 +28,7 @@ import VisitEdit from './pages/visits/VisitEdit';
 import OrderList from './pages/orders/OrderList';
 import OrderCreate from './pages/orders/OrderCreate';
 import OrderDetails from './pages/orders/OrderDetails';
+import Profile from './pages/Profile';
 
 import { Box, Typography } from '@mui/material';
 import './App.css';
@@ -73,7 +74,7 @@ function AppRoutes() {
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: 10,
+            borderRadius: 9999, // Pill shaped buttons
             textTransform: 'none',
             fontWeight: 750,
           },
@@ -83,6 +84,46 @@ function AppRoutes() {
         styleOverrides: {
           root: {
             backgroundImage: 'none',
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: 9999, // Pill shape inputs
+            backgroundColor: theme === 'dark' ? '#040a17' : '#ffffff',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme === 'dark' ? 'rgba(223, 177, 91, 0.2)' : 'rgba(0, 0, 0, 0.15)',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfb15b',
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfb15b',
+            },
+          },
+          input: {
+            padding: '10px 20px',
+            fontSize: '14px',
+          },
+        },
+      },
+      MuiSelect: {
+        styleOverrides: {
+          select: {
+            borderRadius: 9999,
+            padding: '10px 20px',
+          },
+        },
+      },
+      MuiFormLabel: {
+        styleOverrides: {
+          root: {
+            textTransform: 'uppercase',
+            fontSize: '10px',
+            fontWeight: 900,
+            letterSpacing: '0.05em',
+            color: theme === 'dark' ? '#94a3b8' : '#64748b',
           },
         },
       },
@@ -167,6 +208,9 @@ function AppRoutes() {
             <Route path="/orders" element={<OrderList />} />
             <Route path="/orders/create" element={<OrderCreate />} />
             <Route path="/orders/:id" element={<OrderDetails />} />
+
+            {/* Profile Route */}
+            <Route path="/profile" element={<Profile />} />
 
             {/* Fallback unknown routes */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

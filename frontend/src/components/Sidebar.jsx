@@ -141,7 +141,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Bottom Profile & Options Panel */}
       <Box className={`p-4 border-t border-slate-800/30 space-y-3 ${collapsed ? 'items-center' : ''}`}>
         {!collapsed && user && (
-          <Box className="flex items-center gap-3 p-2 rounded-xl bg-slate-900/30 border border-slate-800/10">
+          <Box 
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-3 p-2 rounded-xl bg-slate-900/30 border border-slate-800/10 cursor-pointer hover:bg-slate-800/20 active:scale-[0.98] transition-premium"
+          >
             <Box className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-extrabold flex items-center justify-center text-sm shadow">
               {user.firstName[0].toUpperCase()}{user.lastName[0].toUpperCase()}
             </Box>

@@ -135,7 +135,7 @@ export default function OrderList() {
   const handleExportCSV = async () => {
     try {
       const token = localStorage.getItem('salestrack_token');
-      const response = await fetch(`http://localhost:3001/api/commandes/export?clientId=${clientId}&commercialId=${commercialId}&type=${type}&status=${status}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/commandes/export?clientId=${clientId}&commercialId=${commercialId}&type=${type}&status=${status}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

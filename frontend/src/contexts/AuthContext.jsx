@@ -76,6 +76,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('salestrack_refresh_token');
     localStorage.removeItem('salestrack_user');
   };
+  
+  const updateUser = (newUserData) => {
+    setUser(newUserData);
+    localStorage.setItem('salestrack_user', JSON.stringify(newUserData));
+  };
 
   const value = {
     user,
@@ -87,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     toggleTheme,
     loginUser,
     logoutUser,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api`;
 
 // Create a single Axios instance for the entire app
 const api = axios.create({
@@ -408,5 +408,27 @@ export const cleanupPhotos = async () => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Erreur lors du nettoyage des photos.');
+  }
+};
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
+export const getProfile = async () => {
+  try {
+    const response = await api.get('/users/profile');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Erreur lors du chargement du profil.');
+  }
+};
+
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await api.put('/users/profile', profileData);
+    return response.data;
+  } catch (error) {
+    const err = new Error(error.response?.data?.error || 'Erreur lors de la mise à jour du profil.');
+    err.errors = error.response?.data?.errors;
+    throw err;
   }
 };

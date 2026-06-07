@@ -23,9 +23,9 @@ async function main() {
     data: {
       email: 'admin@salestrack.test',
       passwordHash: adminPasswordHash,
-      firstName: 'Jean',
-      lastName: 'Admin',
-      phone: '+33611223344',
+      firstName: 'Youssef',
+      lastName: 'Alami',
+      phone: '+212611223344',
       role: 'ADMIN',
     },
   });
@@ -35,11 +35,11 @@ async function main() {
     data: {
       email: 'manager@salestrack.test',
       passwordHash: managerPasswordHash,
-      firstName: 'Marc',
-      lastName: 'Manager',
-      phone: '+33622334455',
+      firstName: 'Khadija',
+      lastName: 'Tazi',
+      phone: '+212622334455',
       role: 'MANAGER',
-      equipe: 'Équipe Nord',
+      equipe: 'Équipe Centre',
     },
   });
 
@@ -48,11 +48,11 @@ async function main() {
     data: {
       email: 'commercial1@salestrack.test',
       passwordHash: commercialPasswordHash,
-      firstName: 'Alice',
-      lastName: 'Commerciale',
-      phone: '+33633445566',
+      firstName: 'Hamza',
+      lastName: 'Zawak',
+      phone: '+212633445566',
       role: 'COMMERCIAL',
-      equipe: 'Équipe Nord',
+      equipe: 'Équipe Centre',
       managerId: manager.id,
     },
   });
@@ -62,28 +62,30 @@ async function main() {
     data: {
       email: 'commercial2@salestrack.test',
       passwordHash: commercialPasswordHash,
-      firstName: 'Bob',
-      lastName: 'Commercial',
-      phone: '+33644556677',
+      firstName: 'Amine',
+      lastName: 'Idrissi',
+      phone: '+212644556677',
       role: 'COMMERCIAL',
-      equipe: 'Équipe Nord',
+      equipe: 'Équipe Centre',
       managerId: manager.id,
     },
   });
 
   console.log('Creating clients...');
   const clientsData = [
-    { code: 'CL001', companyName: 'Café de la Gare', phone: '0142345678', email: 'gare@cafe.com', address: '1 Rue de la Gare', city: 'Lille', distributionChannel: 'ON_TRADE', category: 'CAFE', status: 'ACTIVE', assignedTo: commercial1.id },
-    { code: 'CL002', companyName: 'Hôtel Le Bristol', phone: '0143456789', email: 'bristol@hotel.com', address: '45 Rue de la Paix', city: 'Lille', distributionChannel: 'ON_TRADE', category: 'HOTEL', status: 'ACTIVE', assignedTo: commercial1.id },
-    { code: 'CL003', companyName: 'Restaurant L’Aura', phone: '0144567890', email: 'laura@resto.com', address: '12 Avenue Foch', city: 'Lille', distributionChannel: 'ON_TRADE', category: 'RESTAURANT', status: 'ACTIVE', assignedTo: commercial1.id },
-    { code: 'CL004', companyName: 'Épicerie fine Bon Goût', phone: '0145678901', email: 'bongout@epicerie.com', address: '88 Rue Royale', city: 'Lille', distributionChannel: 'OFF_TRADE', category: 'GROCERY', status: 'ACTIVE', assignedTo: commercial1.id },
-    { code: 'CL005', companyName: 'Supermarché Auchan', phone: '0146789012', email: 'auchan@gms.com', address: 'ZAC du Moulin', city: 'Lille', distributionChannel: 'OFF_TRADE', category: 'SUPERMARKET', status: 'PROSPECT', assignedTo: commercial1.id },
+    { code: 'CL001', companyName: 'Café Atlas', phone: '0522123456', email: 'atlas@cafe.ma', address: '25 Boulevard d’Anfa', city: 'Casablanca', distributionChannel: 'ON_TRADE', category: 'CAFE', status: 'ACTIVE', assignedTo: commercial1.id, notes: 'Client très régulier, commandes de boissons hebdomadaires.' },
+    { code: 'CL002', companyName: 'Hôtel La Mamounia', phone: '0524400000', email: 'mamounia@hotel.ma', address: 'Avenue Bab Jdid', city: 'Marrakech', distributionChannel: 'ON_TRADE', category: 'HOTEL', status: 'ACTIVE', assignedTo: commercial1.id, notes: 'Hôtel de luxe, demande des produits premium uniquement.' },
+    { code: 'CL003', companyName: 'Restaurant Al Fassia', phone: '0524434060', email: 'alfassia@restaurant.ma', address: '55 Boulevard Mohamed V', city: 'Marrakech', distributionChannel: 'ON_TRADE', category: 'RESTAURANT', status: 'ACTIVE', assignedTo: commercial1.id, notes: 'Forte consommation de jus de fruits bio.' },
+    { code: 'CL004', companyName: 'Épicerie Bab El Mansour', phone: '0535501234', email: 'mansour@epicerie.ma', address: '12 Rue de Meknès', city: 'Fès', distributionChannel: 'OFF_TRADE', category: 'GROCERY', status: 'ACTIVE', assignedTo: commercial1.id },
+    { code: 'CL005', companyName: 'Supermarché Marjane', phone: '0522405060', email: 'marjane@marjane.ma', address: 'Route de Rabat', city: 'Casablanca', distributionChannel: 'OFF_TRADE', category: 'SUPERMARKET', status: 'PROSPECT', assignedTo: commercial1.id, notes: 'Grand compte en phase finale de négociation.' },
     
-    { code: 'CL006', companyName: 'Bar de la Marine', phone: '0147890123', email: 'marine@bar.com', address: 'Quai du Port', city: 'Roubaix', distributionChannel: 'ON_TRADE', category: 'CAFE', status: 'ACTIVE', assignedTo: commercial2.id },
-    { code: 'CL007', companyName: 'Hôtel Splendid', phone: '0148901234', email: 'splendid@hotel.com', address: '15 Boulevard Carnot', city: 'Roubaix', distributionChannel: 'ON_TRADE', category: 'HOTEL', status: 'ACTIVE', assignedTo: commercial2.id },
-    { code: 'CL008', companyName: 'Bistrot du Nord', phone: '0149012345', email: 'nord@bistrot.com', address: '67 Rue Jean Jaurès', city: 'Roubaix', distributionChannel: 'ON_TRADE', category: 'RESTAURANT', status: 'INACTIVE', assignedTo: commercial2.id },
-    { code: 'CL009', companyName: 'Alimentation Générale', phone: '0150123456', email: 'kamel@aliment.com', address: '110 Rue de Paris', city: 'Roubaix', distributionChannel: 'OFF_TRADE', category: 'TRADITIONAL', status: 'ACTIVE', assignedTo: commercial2.id },
-    { code: 'CL010', companyName: 'GMS Carrefour', phone: '0151234567', email: 'carrefour@gms.com', address: 'Avenue Kennedy', city: 'Roubaix', distributionChannel: 'OFF_TRADE', category: 'SUPERMARKET', status: 'PROSPECT', assignedTo: commercial2.id },
+    { code: 'CL006', companyName: 'Café de la Poste', phone: '0537701122', email: 'poste@cafe.ma', address: 'Avenue Mohammed V', city: 'Rabat', distributionChannel: 'ON_TRADE', category: 'CAFE', status: 'ACTIVE', assignedTo: commercial2.id, notes: 'Terrasse à forte affluence en été.' },
+    { code: 'CL007', companyName: 'Riad Dar El Sadaka', phone: '0524301020', email: 'sadaka@riad.ma', address: 'Bab Ghemat', city: 'Marrakech', distributionChannel: 'ON_TRADE', category: 'HOTEL', status: 'ACTIVE', assignedTo: commercial2.id },
+    { code: 'CL008', companyName: 'Bistrot Tanger', phone: '0539908877', email: 'tanger@bistrot.ma', address: '3 Boulevard Pasteur', city: 'Tanger', distributionChannel: 'ON_TRADE', category: 'RESTAURANT', status: 'INACTIVE', assignedTo: commercial2.id, notes: 'Activité suspendue temporairement pour travaux.' },
+    { code: 'CL009', companyName: 'Alimentation Générale Al Nour', phone: '0528801122', email: 'alnour@aliment.ma', address: '90 Avenue Hassan II', city: 'Agadir', distributionChannel: 'OFF_TRADE', category: 'TRADITIONAL', status: 'ACTIVE', assignedTo: commercial2.id },
+    { code: 'CL010', companyName: 'Hypermarché Carrefour', phone: '0522903040', email: 'carrefour@carrefour.ma', address: 'Sidi Maârouf', city: 'Casablanca', distributionChannel: 'OFF_TRADE', category: 'SUPERMARKET', status: 'PROSPECT', assignedTo: commercial2.id },
+    { code: 'CL011', companyName: 'Hôtel Sofitel Jardin des Roses', phone: '0537675600', email: 'sofitel@hotel.ma', address: 'Impasse Souissi', city: 'Rabat', distributionChannel: 'ON_TRADE', category: 'HOTEL', status: 'ACTIVE', assignedTo: commercial1.id },
+    { code: 'CL012', companyName: 'Café Cappuccino', phone: '0539324020', email: 'cappuccino@cafe.ma', address: 'Avenue Mohammed VI', city: 'Tanger', distributionChannel: 'ON_TRADE', category: 'CAFE', status: 'ACTIVE', assignedTo: commercial2.id },
   ];
 
   const clients = [];
@@ -95,30 +97,33 @@ async function main() {
   console.log('Creating visits...');
   const objets = ['PRISE_COMMANDE', 'SUIVI_CLIENT', 'RECOUVREMENT', 'VISIBILITE_MARQUE', 'IMPLANTATION_PRODUIT', 'NEGOCIATION', 'LIVRAISON', 'RELANCE', 'AUTRE'];
   
-  // Create 20 visits (10 for commercial1, 10 for commercial2)
   const visits = [];
   
-  // Commercial 1 visits
+  // Commercial 1 visits (total 10)
+  const comm1Clients = [clients[0], clients[1], clients[2], clients[3], clients[4], clients[10]];
   for (let i = 0; i < 10; i++) {
-    const client = clients[i % 5]; // First 5 clients belong to commercial1
+    const client = comm1Clients[i % comm1Clients.length];
     const visit = await prisma.visite.create({
       data: {
         clientId: client.id,
         commercialId: commercial1.id,
-        dateDebut: new Date(Date.now() - i * 24 * 60 * 60 * 1000), // sequential days in the past
+        dateDebut: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
         objet: objets[i % objets.length],
         commentaire: `Visite de routine numéro ${i + 1} chez ${client.companyName}.`,
         statutCommande: i % 2 === 0 ? 'COMMANDE' : 'NON_COMMANDE',
         raisonNonCommande: i % 2 === 0 ? null : 'TROP_STOCK',
         problemesConstates: i % 4 === 0 ? 'STOCK' : null,
+        latitude: client.city === 'Casablanca' ? 33.5731 : (client.city === 'Marrakech' ? 31.6295 : 34.0331),
+        longitude: client.city === 'Casablanca' ? -7.5898 : (client.city === 'Marrakech' ? -7.9811 : -5.0003),
       },
     });
     visits.push(visit);
   }
 
-  // Commercial 2 visits
+  // Commercial 2 visits (total 10)
+  const comm2Clients = [clients[5], clients[6], clients[7], clients[8], clients[9], clients[11]];
   for (let i = 0; i < 10; i++) {
-    const client = clients[5 + (i % 5)]; // Next 5 clients belong to commercial2
+    const client = comm2Clients[i % comm2Clients.length];
     const visit = await prisma.visite.create({
       data: {
         clientId: client.id,
@@ -129,6 +134,8 @@ async function main() {
         statutCommande: i % 3 === 0 ? 'COMMANDE' : 'NON_COMMANDE',
         raisonNonCommande: i % 3 === 0 ? null : 'PRIX_ELEVE',
         problemesConstates: null,
+        latitude: client.city === 'Rabat' ? 34.0150 : (client.city === 'Marrakech' ? 31.6300 : 35.7595),
+        longitude: client.city === 'Rabat' ? -6.8327 : (client.city === 'Marrakech' ? -7.9700 : -5.8340),
       },
     });
     visits.push(visit);
@@ -157,7 +164,7 @@ async function main() {
     data: {
       clientId: clients[1].id,
       commercialId: commercial1.id,
-      visiteId: visits[2].id,
+      visiteId: visits[1].id,
       type: 'COMMANDE',
       statut: 'EN_ATTENTE',
       totalHT: 450.0,

@@ -166,7 +166,7 @@ export default function ClientList() {
   const handleExportCSV = async () => {
     try {
       const token = localStorage.getItem('salestrack_token');
-      const response = await fetch(`http://localhost:3001/api/clients/export?name=${nameSearch}&code=${codeSearch}&city=${cityFilter}&distributionChannel=${channelFilter}&category=${categoryFilter}&status=${statusFilter}&assignedTo=${commercialFilter}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/clients/export?name=${nameSearch}&code=${codeSearch}&city=${cityFilter}&distributionChannel=${channelFilter}&category=${categoryFilter}&status=${statusFilter}&assignedTo=${commercialFilter}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

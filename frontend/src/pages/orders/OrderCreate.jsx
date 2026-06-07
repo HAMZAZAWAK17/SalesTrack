@@ -219,7 +219,6 @@ export default function OrderCreate() {
                   size="small"
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
                 >
                   {clients.map(c => (
                     <MenuItem key={c.id} value={c.id}>
@@ -239,7 +238,6 @@ export default function OrderCreate() {
                 size="small"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
               >
                 <MenuItem value="COMMANDE">Commande Ferme</MenuItem>
                 <MenuItem value="DEVIS">Devis / Proposition</MenuItem>
@@ -255,7 +253,6 @@ export default function OrderCreate() {
                 size="small"
                 value={statut}
                 onChange={(e) => setStatut(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
               >
                 <MenuItem value="EN_ATTENTE">En attente de traitement</MenuItem>
                 <MenuItem value="BROUILLON">Brouillon temporaire</MenuItem>
@@ -291,14 +288,13 @@ export default function OrderCreate() {
                 >
                   {/* Preset Autocomplete */}
                   <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Présélection</span>
+                    <span className="text-[9px] font-bold text-slate-500 block">Présélection d'un article</span>
                     <TextField
                       select
                       fullWidth
                       size="small"
                       value={line.presetIndex}
                       onChange={(e) => handlePresetChange(idx, e.target.value)}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                     >
                       <MenuItem value="">-- Saisie libre --</MenuItem>
                       {PRODUCT_PRESETS.map((p, pIdx) => (
@@ -311,64 +307,58 @@ export default function OrderCreate() {
 
                   {/* Designation */}
                   <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Désignation</span>
+                    <span className="text-[9px] font-bold text-slate-500 block">Désignation de l'article</span>
                     <TextField
                       fullWidth
                       size="small"
                       value={line.designation}
                       onChange={(e) => handleLineValueChange(idx, 'designation', e.target.value)}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                     />
                   </div>
 
                   {/* Ref & Conditionnement */}
                   <div className="sm:col-span-2 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Réf / Cond.</span>
+                    <span className="text-[9px] font-bold text-slate-500 block">Référence / Conditionnement</span>
                     <div className="flex gap-1">
                       <TextField
-                        placeholder="Réf"
+                        placeholder="Référence"
                         size="small"
                         value={line.reference}
                         onChange={(e) => handleLineValueChange(idx, 'reference', e.target.value)}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                       />
                       <TextField
-                        placeholder="Cond"
+                        placeholder="Conditionnement"
                         size="small"
                         value={line.conditionnement}
                         onChange={(e) => handleLineValueChange(idx, 'conditionnement', e.target.value)}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                       />
                     </div>
                   </div>
 
                   {/* Quantité & Prix & Remise */}
                   <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Quantité / Prix HT / Remise %</span>
+                    <span className="text-[9px] font-bold text-slate-500 block">Quantité / Prix Unitaire HT / Remise %</span>
                     <div className="flex gap-1">
                       <TextField
                         type="number"
-                        placeholder="Qté"
+                        placeholder="Quantité"
                         size="small"
                         value={line.quantite}
                         onChange={(e) => handleLineValueChange(idx, 'quantite', e.target.value)}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                       />
                       <TextField
                         type="number"
-                        placeholder="Prix"
+                        placeholder="Prix HT"
                         size="small"
                         value={line.prixUnitaireHT}
                         onChange={(e) => handleLineValueChange(idx, 'prixUnitaireHT', e.target.value)}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                       />
                       <TextField
                         type="number"
-                        placeholder="Remise"
+                        placeholder="Remise (%)"
                         size="small"
                         value={line.remise}
                         onChange={(e) => handleLineValueChange(idx, 'remise', e.target.value)}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                       />
                     </div>
                   </div>

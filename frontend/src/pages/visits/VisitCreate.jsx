@@ -503,7 +503,7 @@ export default function VisitCreate() {
                   }`}
                 >
                   <img
-                    src={`http://localhost:3001${photo.cheminFichier}`}
+                    src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${photo.cheminFichier}`}
                     alt="Terrain"
                     className="w-14 h-14 rounded-lg object-cover bg-slate-900 border border-slate-800/40"
                   />
@@ -523,9 +523,9 @@ export default function VisitCreate() {
                   <button
                     type="button"
                     onClick={() => handleRemovePhoto(idx)}
-                    className="p-1 rounded-lg text-red-400 hover:bg-red-500/10"
+                    className="p-1 rounded-lg text-red-400 hover:bg-red-500/10 cursor-pointer font-bold text-xs"
                   >
-                    Suppr.
+                    Supprimer
                   </button>
                 </div>
               ))}
