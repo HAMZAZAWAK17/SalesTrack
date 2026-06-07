@@ -6,7 +6,7 @@ import { Box, Typography, Paper, CircularProgress, Snackbar, Alert, Button, Divi
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import PersonIcon from '@mui/icons-material/Person';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import MailOutlineIcon from '@mui/icons-material/MailOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import BadgeIcon from '@mui/icons-material/Badge';
