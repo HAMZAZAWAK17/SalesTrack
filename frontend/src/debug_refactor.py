@@ -2,25 +2,17 @@ import subprocess
 import os
 import re
 
-files = [
-    "pages/Profile.jsx",
-    "pages/clients/ClientCreate.jsx",
-    "pages/clients/ClientDetails.jsx",
-    "pages/clients/ClientEdit.jsx",
-    "pages/clients/ClientList.jsx",
-    "pages/orders/OrderCreate.jsx",
-    "pages/orders/OrderDetails.jsx",
-    "pages/orders/OrderList.jsx",
-    "pages/users/UserCreate.jsx",
-    "pages/users/UserDetails.jsx",
-    "pages/users/UserEdit.jsx",
-    "pages/users/UserList.jsx",
-    "pages/visits/VisitCreate.jsx",
-    "pages/visits/VisitEdit.jsx",
-    "pages/visits/VisitList.jsx"
-]
+git_path = "frontend/src/pages/users/UserEdit.jsx"
 
-src_dir = r"C:\Users\Hamza\Desktop\Desktop-folders\projects\SalesTrack\frontend\src"
+# Get original content from aed5e38
+proc = subprocess.run(
+    ["git", "show", f"aed5e38:{git_path}"],
+    capture_output=True,
+    text=True,
+    encoding="utf-8",
+    check=True
+)
+content = proc.stdout
 
 def cleanup_mui_imports(content):
     def repl(match):
@@ -30,9 +22,7 @@ def cleanup_mui_imports(content):
         if not parts:
             return ""
         return 'import { ' + ', '.join(parts) + ' } from \'@mui/material\''
-    # Handle single or double quotes
     content = re.sub(r"import\s*\{\s*([^}]+?)\s*\}\s*from\s*['\"]@mui/material['\"]", repl, content)
-    # Also handle multiline imports
     content = re.sub(r"import\s*\{\s*([^}]+?)\s*\}\s*from\s*['\"]@mui/material['\"];?", repl, content)
     return content
 
@@ -46,16 +36,13 @@ def remove_toast_jsx(content):
                 if end_idx != -1:
                     start_idx = idx
                     pre_sub = content[:idx]
-                    # Find the last occurrence of {/* in pre_sub, and if it's within 150 chars, use it.
                     last_comment_idx = pre_sub.rfind('{/*')
                     if last_comment_idx != -1 and (idx - last_comment_idx) < 150:
-                        # Find the corresponding closing comment block
                         close_comment_idx = pre_sub.find('*/}', last_comment_idx)
                         if close_comment_idx != -1:
                             start_idx = last_comment_idx
                     content = content[:start_idx] + content[end_idx + len(end_marker):]
             else:
-                # Brace-based JSX
                 depth = 1
                 j = idx + len(marker)
                 while j < len(content) and depth > 0:
@@ -77,19 +64,14 @@ def remove_toast_jsx(content):
 
 def parse_set_toast_obj(obj_str):
     obj_str = obj_str.strip().strip('{}').strip()
-    
-    # Extract message value
     m = re.search(r'\bmessage\s*:\s*([\s\S]+?)(?:\s*,\s*(?:\bseverity\b|\btype\b|\bopen\b|\bshow\b)\s*:|$)', obj_str)
     message_val = m.group(1).strip() if m else None
     if message_val and message_val.endswith(','):
         message_val = message_val[:-1].strip()
-        
-    # Extract severity or type value
     s = re.search(r'\b(?:severity|type)\s*:\s*([\s\S]+?)(?:\s*,\s*(?:\bmessage\b|\bopen\b|\bshow\b)\s*:|$)', obj_str)
     severity_val = s.group(1).strip() if s else None
     if severity_val and severity_val.endswith(','):
         severity_val = severity_val[:-1].strip()
-        
     return message_val, severity_val
 
 def replace_set_toast_calls(content):
@@ -98,12 +80,10 @@ def replace_set_toast_calls(content):
         idx = content.find("setToast", idx)
         if idx == -1:
             break
-        
         start_paren = content.find("(", idx)
         if start_paren == -1 or start_paren - idx > 15:
             idx += 8
             continue
-        
         depth = 1
         j = start_paren + 1
         while j < len(content) and depth > 0:
@@ -112,11 +92,9 @@ def replace_set_toast_calls(content):
             elif content[j] == ')':
                 depth -= 1
             j += 1
-        
         if depth == 0:
             full_call = content[idx:j]
             inner_content = content[start_paren + 1:j - 1].strip()
-            
             if "...toast" in inner_content or "open: false" in inner_content or "show: false" in inner_content:
                 end_idx = j
                 if end_idx < len(content) and content[end_idx] == ';':
@@ -125,7 +103,6 @@ def replace_set_toast_calls(content):
                     end_idx += 1
                 content = content[:idx] + content[end_idx:]
                 continue
-                
             message_val, severity_val = parse_set_toast_obj(inner_content)
             if message_val:
                 severity = severity_val.strip("'\"") if severity_val else 'success'
@@ -137,7 +114,6 @@ def replace_set_toast_calls(content):
                     new_call = f"toast({message_val}, {{ icon: '⚠️' }});"
                 else:
                     new_call = f"toast({message_val});"
-                
                 end_idx = j
                 if end_idx < len(content) and content[end_idx] == ';':
                     end_idx += 1
@@ -147,69 +123,23 @@ def replace_set_toast_calls(content):
                 idx += len(full_call)
         else:
             idx += 8
-            
     return content
 
-for f in files:
-    path = os.path.join(src_dir, f.replace("/", "\\"))
-    git_path = "frontend/src/" + f
-    
-    print(f"Restoring and refactoring {f}...")
-    
-    # Get original content from aed5e38
-    try:
-        proc = subprocess.run(
-            ["git", "show", f"aed5e38:{git_path}"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=True
-        )
-        content = proc.stdout
-    except Exception as e:
-        print(f"Error fetching original content for {f}: {e}")
-        continue
-        
-    # Clean up MUI imports
-    content = cleanup_mui_imports(content)
-    
-    # Remove local state variable
-    content = re.sub(r'const\s*\[\s*toast\s*,\s*setToast\s*\]\s*=\s*useState\s*\(\s*\{[\s\S]*?\}\s*\)\s*;?\n?', '', content)
-    
-    # Replace setToast calls (done before handleToastClose removal!)
-    content = replace_set_toast_calls(content)
-    
-    # Remove handleToastClose function
-    content = re.sub(r'const\s+handleToastClose\s*=\s*\(\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?', '', content)
-    
-    # Replace showToast definition in ClientCreate/ClientEdit if present
-    show_toast_pattern = r'const\s+showToast\s*=\s*\(\s*message\s*,\s*type\s*=\s*[\'"]success[\'"]\s*\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?'
-    if "const showToast" in content:
-        new_show_toast = """const showToast = (message, type = 'success') => {
-    if (type === 'success') {
-      toast.success(message);
-    } else if (type === 'warning') {
-      toast(message, { icon: '⚠️' });
-    } else {
-      toast.error(message);
-    }
-  };
-"""
-        content = re.sub(show_toast_pattern, new_show_toast, content)
-        
-    # Remove JSX
-    content = remove_toast_jsx(content)
-    
-    # Inject react-hot-toast import at top
-    if "import toast" not in content and "import { toast }" not in content:
-        import_match = re.search(r'^import\s', content, re.MULTILINE)
-        if import_match:
-            insert_pos = import_match.start()
-            content = content[:insert_pos] + "import toast from 'react-hot-toast';\n" + content[insert_pos:]
-        else:
-            content = "import toast from 'react-hot-toast';\n" + content
-            
-    with open(path, "w", encoding="utf-8", newline="\n") as file:
-        file.write(content)
+# 1. Clean imports
+content = cleanup_mui_imports(content)
+# 2. Remove useState toast
+content = re.sub(r'const\s*\[\s*toast\s*,\s*setToast\s*\]\s*=\s*useState\s*\(\s*\{[\s\S]*?\}\s*\)\s*;?\n?', '', content)
 
-print("Finished refactoring all files successfully!")
+# 3. Replace setToast calls (now before handleToastClose removal!)
+content = replace_set_toast_calls(content)
+
+# 4. Remove handleToastClose
+content = re.sub(r'const\s+handleToastClose\s*=\s*\(\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?', '', content)
+
+# 5. Remove JSX
+content = remove_toast_jsx(content)
+
+print("\n--- Final Output ---")
+final_lines = content.splitlines()
+for i in range(70, min(95, len(final_lines))):
+    print(f"{i+1}: {final_lines[i]}")
