@@ -1,8 +1,9 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import * as api from '../services/api';
-import { Box, Typography, Paper, CircularProgress, Snackbar, Alert, Button, Divider } from '@mui/material';
+import { Box, Typography, Paper, CircularProgress, Button, Divider } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import PersonIcon from '@mui/icons-material/Person';
@@ -29,8 +30,7 @@ export default function Profile() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
-  const [validationErrors, setValidationErrors] = useState({});
+    const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     async function fetchLatestProfile() {
@@ -52,7 +52,7 @@ export default function Profile() {
         }
       } catch (err) {
         console.error('Error fetching profile:', err);
-        setToast({ open: true, message: 'Erreur lors de la récupération des informations du profil.', severity: 'error' });
+        toast.error('Erreur lors de la récupération des informations du profil.');
       } finally {
         setLoading(false);
       }
@@ -67,8 +67,7 @@ export default function Profile() {
     }
   };
 
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
+  );
   };
 
   const handleSubmit = async (e) => {
@@ -90,7 +89,7 @@ export default function Profile() {
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
-      setToast({ open: true, message: 'Veuillez corriger les erreurs de validation.', severity: 'error' });
+      toast.error('Veuillez corriger les erreurs de validation.');
       return;
     }
 
@@ -121,11 +120,11 @@ export default function Profile() {
         // Reset password field
         setProfileData(prev => ({ ...prev, password: '' }));
 
-        setToast({ open: true, message: 'Profil mis à jour avec succès !', severity: 'success' });
+        toast.success('Profil mis à jour avec succès !');
       }
     } catch (err) {
       console.error('Error updating profile:', err);
-      setToast({ open: true, message: err.message || 'Erreur lors de la mise à jour.', severity: 'error' });
+      toast.error(err.message || 'Erreur lors de la mise à jour.');
     } finally {
       setSaving(false);
     }
@@ -351,17 +350,7 @@ export default function Profile() {
         </Paper>
       </form>
 
-      {/* Toast Notification */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={4000}
-        onClose={handleToastClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleToastClose} severity={toast.severity} variant="filled" sx={{ borderRadius: 2 }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
+      
     </div>
   );
 }
