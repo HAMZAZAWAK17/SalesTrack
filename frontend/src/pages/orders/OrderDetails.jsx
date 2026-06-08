@@ -1,8 +1,9 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { Box, Container, Typography, CircularProgress, Alert, Paper, Grid, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, MenuItem, TextField } from '@mui/material';
+import { Box, Container, Typography, CircularProgress, Paper, Grid, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, MenuItem, TextField } from '@mui/material'
 
 // Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -25,8 +26,7 @@ export default function OrderDetails() {
   // Status transition state
   const [statusVal, setStatusVal] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
-
+  
   async function loadOrder() {
     try {
       setLoading(true);
@@ -55,7 +55,7 @@ export default function OrderDetails() {
       setStatusUpdating(true);
       const res = await api.updateCommande(id, { statut: nextStatus });
       if (res.success) {
-        setToast({ open: true, message: 'Statut mis à jour avec succès.', severity: 'success' });
+        toast.success('Statut mis à jour avec succès.');
         loadOrder();
       }
     } catch (err) {
