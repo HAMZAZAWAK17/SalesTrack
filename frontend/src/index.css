@@ -261,3 +261,87 @@ select option {
   transform: translateY(0);
 }
 
+/* ─── Print Layout Styles ─────────────────────────────────────────────────── */
+@media print {
+  /* Hide all non-printable elements */
+  .print-hidden,
+  .print\:hidden,
+  header,
+  footer,
+  aside,
+  nav,
+  button,
+  .MuiButton-root,
+  .MuiIconButton-root,
+  .MuiDrawer-root,
+  .MuiDrawer-docked {
+    display: none !important;
+  }
+
+  /* Reset layout constraints for printing */
+  body, 
+  html, 
+  #root, 
+  main,
+  .min-h-screen,
+  .flex-1,
+  .flex-grow,
+  .MuiBox-root {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Style paper card container to take full width */
+  .MuiPaper-root {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  /* Force all text elements to print in solid black */
+  h1, h2, h3, h4, h5, h6, p, span, td, th, strong, div {
+    color: #000000 !important;
+  }
+
+  /* Ensure table borders and headers are crisp */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  
+  th, td {
+    border: 1px solid #94a3b8 !important;
+    color: #000000 !important;
+    padding: 8px !important;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    font-weight: bold !important;
+  }
+
+  /* Avoid page breaks inside table rows or critical info blocks */
+  tr {
+    page-break-inside: avoid !important;
+  }
+}
+
+

@@ -63,7 +63,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <Box
-      className={`h-screen hidden md:flex flex-col border-r transition-all duration-300 relative ${
+      className={`h-screen hidden md:flex flex-col border-r transition-all duration-300 relative print:hidden ${
         theme === 'dark'
           ? 'glass-panel border-slate-800/80 bg-slate-950/70 text-slate-100'
           : 'bg-white border-slate-200 text-slate-800 shadow-xl'

@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }) {
       {/* 2. Main Content Frame */}
       <Box className="flex-1 flex flex-col h-screen overflow-hidden relative">
         {/* Mobile Header Bar */}
-        <header className={`md:hidden h-16 flex items-center justify-between px-4 border-b shrink-0 z-30 ${
+        <header className={`md:hidden h-16 flex items-center justify-between px-4 border-b shrink-0 z-30 print:hidden ${
           theme === 'dark' ? 'glass-panel border-slate-900 bg-slate-950/90' : 'bg-white border-slate-200 shadow-sm'
         }`}>
           <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Commercial quick floating button or bottom actions on mobile */}
         {user?.role === 'COMMERCIAL' && (
-          <Box className="md:hidden fixed bottom-6 right-6 z-40">
+          <Box className="md:hidden fixed bottom-6 right-6 z-40 print:hidden">
             <button
               onClick={() => navigate('/visits/create')}
               className="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 border border-indigo-400/20 active:scale-95 transition-premium cursor-pointer"
