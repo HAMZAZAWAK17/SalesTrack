@@ -17,7 +17,7 @@ export function LineChart({ data = [], height = 240 }) {
     );
   }
 
-  const padding = { top: 30, right: 30, bottom: 40, left: 50 };
+  const padding = { top: 30, right: 30, bottom: 40, left: 55 };
   const svgWidth = 500;
   const svgHeight = height;
 
@@ -26,7 +26,7 @@ export function LineChart({ data = [], height = 240 }) {
 
   // Extract values
   const salesValues = data.map(d => d.sales);
-  const maxVal = Math.max(...salesValues, 1000) * 1.1; // 10% headroom
+  const maxVal = Math.max(...salesValues, 1000) * 1.15; // 15% headroom
   const minVal = 0;
 
   // Calculate coordinates
@@ -70,21 +70,16 @@ export function LineChart({ data = [], height = 240 }) {
     <div className="w-full relative select-none">
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto overflow-visible">
         <defs>
-          {/* Glowing Area Fill Gradient */}
+          {/* Glowing Area Fill Gradient (Indigo to Transparent) */}
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#dfb15b" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
           </linearGradient>
-          {/* Main Line Stroke Gradient */}
+          {/* Main Line Stroke Gradient (Indigo to Purple) */}
           <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#dfb15b" />
-            <stop offset="50%" stopColor="#f0c354" />
-            <stop offset="100%" stopColor="#f59e0b" />
-          </linearGradient>
-          {/* Grid lines pattern */}
-          <linearGradient id="gridGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.03" />
+            <stop offset="0%" stopColor="#6366f1" />
+            <stop offset="50%" stopColor="#8b5cf6" />
+            <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
         </defs>
 
@@ -147,7 +142,7 @@ export function LineChart({ data = [], height = 240 }) {
               cx={pt.x}
               cy={pt.y}
               r={hoveredIdx === idx ? "7" : "4.5"}
-              fill={hoveredIdx === idx ? "#f59e0b" : "#dfb15b"}
+              fill={hoveredIdx === idx ? "#ec4899" : "#6366f1"}
               stroke={theme === 'dark' ? '#040a17' : '#ffffff'}
               strokeWidth="2"
               className="transition-all duration-200 shadow-md"
@@ -208,7 +203,7 @@ export function LineChart({ data = [], height = 240 }) {
 
 /**
  * 2. DonutChart Component
- * Draws client category distribution breakdown using responsive SVG radial segments.
+ * Draws client category distribution breakdown using responsive SVG radial segments with meaningful colors.
  */
 export function DonutChart({ data = [] }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
@@ -223,16 +218,28 @@ export function DonutChart({ data = [] }) {
 
   const total = data.reduce((sum, item) => sum + item.count, 0);
 
-  // Modern palette colors matching our gold theme
-  const colors = [
-    '#dfb15b', // Gold
-    '#f59e0b', // Amber
-    '#f6d987', // Sand Gold
-    '#b45309', // Bronze/Brown
-    '#fbbf24', // Warm Yellow
-    '#e5ab30', // Dark Gold
-    '#38bdf8', // Contrast Light Sky
-  ];
+  // Modern, distinct semantic colors for categories
+  const categoryColors = {
+    HOTEL: '#f43f5e',       // Rose / Red (Hotels)
+    RESTAURANT: '#f97316',  // Vivid Orange (Restaurants)
+    CAFE: '#eab308',        // Golden Yellow (Cafes)
+    GROCERY: '#10b981',     // Emerald Green (Groceries)
+    SUPERMARKET: '#06b6d4',  // Cyan/Teal (Supermarkets)
+    TRADITIONAL: '#3b82f6',  // Electric Blue (Traditional)
+    OTHER: '#64748b',       // Slate Grey (Others)
+    AUTRE: '#64748b',
+  };
+
+  const categoryLabels = {
+    HOTEL: 'Hôtels',
+    RESTAURANT: 'Restaurants',
+    CAFE: 'Cafés',
+    GROCERY: 'Épiceries',
+    SUPERMARKET: 'Supermarchés',
+    TRADITIONAL: 'Traditionnel',
+    OTHER: 'Autre',
+    AUTRE: 'Autre',
+  };
 
   // Circle dimensions
   const radius = 50;
@@ -244,23 +251,27 @@ export function DonutChart({ data = [] }) {
   // Calculate slice data with cumulative offsets
   let cumulativeOffset = 0;
   const slices = data.map((d, idx) => {
+    const rawCat = d.category || d.status || 'OTHER';
+    const cleanCat = rawCat.toUpperCase();
+    
     const percentage = total > 0 ? d.count / total : 0;
     const dashArray = `${percentage * circumference} ${circumference}`;
     const dashOffset = -cumulativeOffset;
     cumulativeOffset += percentage * circumference;
 
     return {
-      label: d.category || d.status || 'Autre',
+      categoryKey: cleanCat,
+      label: categoryLabels[cleanCat] || rawCat,
       count: d.count,
       percentage: Math.round(percentage * 100),
       dashArray,
       dashOffset,
-      color: colors[idx % colors.length]
+      color: categoryColors[cleanCat] || '#8b5cf6' // Fallback to purple
     };
   });
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 p-2">
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 p-2 w-full">
       {/* Donut SVG Ring */}
       <div className="relative w-36 h-36 shrink-0">
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full transform -rotate-90">
@@ -302,28 +313,28 @@ export function DonutChart({ data = [] }) {
           <span className="text-xl font-black text-slate-100 leading-none">
             {hoveredIdx !== null ? slices[hoveredIdx].count : total}
           </span>
-          <span className="text-[9px] font-black uppercase text-indigo-400 tracking-wider mt-1">
+          <span className="text-[9px] font-black uppercase text-indigo-400 tracking-wider mt-1.5 max-w-[80px] truncate">
             {hoveredIdx !== null ? slices[hoveredIdx].label : 'Clients'}
           </span>
         </div>
       </div>
 
       {/* Side Legend Panel */}
-      <div className="flex-1 w-full space-y-2">
+      <div className="flex-1 w-full space-y-1.5">
         {slices.map((slice, idx) => (
           <div
             key={idx}
             className={`flex items-center justify-between p-1.5 rounded-lg border transition-premium ${
               hoveredIdx === idx
-                ? 'bg-slate-900/40 border-slate-700'
+                ? 'bg-slate-900/40 border-slate-700/60'
                 : 'border-transparent bg-transparent'
             }`}
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color }}></span>
-              <span className="text-xs font-bold text-slate-300 truncate max-w-[130px]" title={slice.label}>
+              <span className="text-xs font-bold text-slate-350 truncate" title={slice.label}>
                 {slice.label}
               </span>
             </div>
