@@ -141,10 +141,17 @@ export default function DashboardLayout({ children }) {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }} // Better mobile performance
-        PaperProps={{
-          className: `w-72 flex flex-col h-full border-r ${
-            theme === 'dark' ? 'bg-slate-950 text-slate-100 border-slate-900' : 'bg-white text-slate-800 border-slate-200'
-          }`,
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 288,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            borderRight: '1px solid',
+            borderColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.12)',
+            backgroundColor: theme === 'dark' ? '#040a17' : '#ffffff',
+            color: theme === 'dark' ? '#f8fafc' : '#1e293b',
+          }
         }}
       >
         <Box className="p-4 flex items-center justify-between border-b border-slate-800/10">

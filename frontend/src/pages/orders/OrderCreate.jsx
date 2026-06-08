@@ -278,108 +278,182 @@ export default function OrderCreate() {
             </div>
 
             {/* Line rows */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {lines.map((line, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 rounded-xl border grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center relative ${
-                    theme === 'dark' ? 'border-slate-850 bg-slate-900/10' : 'border-slate-150 bg-slate-50 shadow-sm'
+                  className={`p-5 rounded-2xl border transition-premium relative flex flex-col gap-4 ${
+                    theme === 'dark' 
+                      ? 'border-slate-800/80 bg-slate-900/20 hover:border-slate-700/60' 
+                      : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 shadow-sm'
                   }`}
                 >
-                  {/* Preset Autocomplete */}
-                  <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Présélection d'un article</span>
-                    <TextField
-                      select
-                      fullWidth
-                      size="small"
-                      value={line.presetIndex}
-                      onChange={(e) => handlePresetChange(idx, e.target.value)}
-                    >
-                      <MenuItem value="">-- Saisie libre --</MenuItem>
-                      {PRODUCT_PRESETS.map((p, pIdx) => (
-                        <MenuItem key={pIdx} value={pIdx}>
-                          {p.designation}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </div>
-
-                  {/* Designation */}
-                  <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Désignation de l'article</span>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={line.designation}
-                      onChange={(e) => handleLineValueChange(idx, 'designation', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Ref & Conditionnement */}
-                  <div className="sm:col-span-2 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Référence / Conditionnement</span>
-                    <div className="flex gap-1">
-                      <TextField
-                        placeholder="Référence"
+                  {/* Card Header: Line index, Total, Delete button */}
+                  <div className="flex justify-between items-center pb-2 border-b border-dashed border-slate-800/10 dark:border-slate-700/10">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider text-amber-500 bg-amber-500/10 rounded-full uppercase">
+                        Article #{idx + 1}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Sous-total :</span>
+                        <span className="text-sm font-black text-amber-500">
+                          {calculateLineTotal(line).toLocaleString('fr-FR')} €
+                        </span>
+                      </div>
+                      
+                      <IconButton
+                        disabled={lines.length === 1}
+                        onClick={() => handleRemoveLine(idx)}
+                        sx={{
+                          color: 'rgb(248 113 113)',
+                          bgcolor: 'rgba(248, 113, 113, 0.08)',
+                          '&:hover': {
+                            bgcolor: 'rgba(248, 113, 113, 0.15)',
+                          },
+                          borderRadius: 2,
+                          width: 32,
+                          height: 32
+                        }}
                         size="small"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </div>
+
+                  {/* Inputs Grid Layout */}
+                  <div className="grid grid-cols-12 gap-4">
+                    {/* Preset Autocomplete */}
+                    <div className="col-span-12 sm:col-span-6 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Présélection d'un article</span>
+                      <TextField
+                        select
+                        fullWidth
+                        size="small"
+                        value={line.presetIndex}
+                        onChange={(e) => handlePresetChange(idx, e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
+                      >
+                        <MenuItem value="">-- Saisie libre --</MenuItem>
+                        {PRODUCT_PRESETS.map((p, pIdx) => (
+                          <MenuItem key={pIdx} value={pIdx}>
+                            {p.designation} {p.prixUnitaireHT > 0 ? `(${p.prixUnitaireHT}€)` : ''}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </div>
+
+                    {/* Designation */}
+                    <div className="col-span-12 sm:col-span-6 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Désignation de l'article</span>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Ex: Eau Plate 1.5L"
+                        value={line.designation}
+                        onChange={(e) => handleLineValueChange(idx, 'designation', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Reference */}
+                    <div className="col-span-6 sm:col-span-3 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Référence</span>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Ex: SKU-01"
                         value={line.reference}
                         onChange={(e) => handleLineValueChange(idx, 'reference', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
                       />
+                    </div>
+
+                    {/* Conditionnement */}
+                    <div className="col-span-6 sm:col-span-3 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Conditionnement</span>
                       <TextField
-                        placeholder="Conditionnement"
+                        fullWidth
                         size="small"
+                        placeholder="Ex: Pack de 6"
                         value={line.conditionnement}
                         onChange={(e) => handleLineValueChange(idx, 'conditionnement', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
                       />
                     </div>
-                  </div>
 
-                  {/* Quantité & Prix & Remise */}
-                  <div className="sm:col-span-3 space-y-1">
-                    <span className="text-[9px] font-bold text-slate-500 block">Quantité / Prix Unitaire HT / Remise %</span>
-                    <div className="flex gap-1">
+                    {/* Quantité */}
+                    <div className="col-span-4 sm:col-span-2 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Quantité</span>
                       <TextField
                         type="number"
-                        placeholder="Quantité"
+                        fullWidth
                         size="small"
+                        placeholder="0"
                         value={line.quantite}
                         onChange={(e) => handleLineValueChange(idx, 'quantite', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
                       />
+                    </div>
+
+                    {/* Prix Unitaire HT */}
+                    <div className="col-span-4 sm:col-span-2 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Prix HT (€)</span>
                       <TextField
                         type="number"
-                        placeholder="Prix HT"
+                        fullWidth
                         size="small"
+                        placeholder="0.00"
                         value={line.prixUnitaireHT}
                         onChange={(e) => handleLineValueChange(idx, 'prixUnitaireHT', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
                       />
+                    </div>
+
+                    {/* Remise % */}
+                    <div className="col-span-4 sm:col-span-2 space-y-1">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Remise (%)</span>
                       <TextField
                         type="number"
-                        placeholder="Remise (%)"
+                        fullWidth
                         size="small"
+                        placeholder="0"
                         value={line.remise}
                         onChange={(e) => handleLineValueChange(idx, 'remise', e.target.value)}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 9999,
+                          }
+                        }}
                       />
                     </div>
-                  </div>
-
-                  {/* Delete / Summary Line */}
-                  <div className="sm:col-span-1 flex items-center justify-end gap-2 mt-2 sm:mt-0">
-                    <div className="text-right shrink-0">
-                      <div className="text-[10px] font-bold text-slate-500 leading-none">Total</div>
-                      <div className="text-xs font-black text-indigo-400 mt-1">
-                        {calculateLineTotal(line)} €
-                      </div>
-                    </div>
-
-                    <IconButton
-                      disabled={lines.length === 1}
-                      onClick={() => handleRemoveLine(idx)}
-                      className="text-red-400"
-                      size="small"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
                   </div>
                 </div>
               ))}

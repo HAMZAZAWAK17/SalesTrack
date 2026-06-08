@@ -11,6 +11,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import SaveIcon from '@mui/icons-material/Save';
 import PrintIcon from '@mui/icons-material/Print';
+import MapIcon from '@mui/icons-material/Map';
 
 export default function OrderDetails() {
   const { id } = useParams();
