@@ -76,7 +76,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         className={`absolute -right-3.5 top-6 p-1 rounded-full border shadow-md hover:scale-110 transition-premium cursor-pointer ${
           theme === 'dark'
             ? 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
-            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-150'
+            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
         }`}
         size="small"
       >
@@ -84,7 +84,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </IconButton>
 
       {/* Sidebar Header Brand Logo */}
-      <Box className="p-6 flex items-center gap-3 h-20 border-b border-slate-800/30 overflow-hidden">
+      <Box className={`p-6 flex items-center gap-3 h-20 border-b overflow-hidden ${
+        theme === 'dark' ? 'border-slate-800/30' : 'border-slate-100'
+      }`}>
         <Box
           className="w-10 h-10 shrink-0 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 cursor-pointer"
           onClick={() => navigate('/dashboard')}
@@ -95,10 +97,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </Box>
         {!collapsed && (
           <Box className="flex flex-col select-none animate-fade-in">
-            <span className="text-lg font-black tracking-tight bg-gradient-to-r from-indigo-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+            <span className={`text-lg font-black tracking-tight ${
+              theme === 'dark'
+                ? 'bg-gradient-to-r from-indigo-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent'
+                : 'text-slate-800'
+            }`}>
               SalesTrack
             </span>
-            <span className={`text-[9px] font-extrabold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+            <span className={`text-[9px] font-extrabold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-550' : 'text-slate-400'}`}>
               Version 1.0
             </span>
           </Box>
@@ -139,20 +145,30 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </Box>
 
       {/* Bottom Profile & Options Panel */}
-      <Box className={`p-4 border-t border-slate-800/30 space-y-3 ${collapsed ? 'items-center' : ''}`}>
+      <Box className={`p-4 border-t space-y-3 ${collapsed ? 'items-center' : ''} ${
+        theme === 'dark' ? 'border-slate-800/30' : 'border-slate-100'
+      }`}>
         {!collapsed && user && (
           <Box 
             onClick={() => navigate('/profile')}
-            className="flex items-center gap-3 p-2 rounded-xl bg-slate-900/30 border border-slate-800/10 cursor-pointer hover:bg-slate-800/20 active:scale-[0.98] transition-premium"
+            className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer active:scale-[0.98] transition-premium ${
+              theme === 'dark'
+                ? 'bg-slate-900/40 border-slate-800/60 hover:bg-slate-800/30'
+                : 'bg-slate-50 border-slate-200 hover:bg-slate-100/80 shadow-sm'
+            }`}
           >
             <Box className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-extrabold flex items-center justify-center text-sm shadow">
               {user.firstName[0].toUpperCase()}{user.lastName[0].toUpperCase()}
             </Box>
             <Box className="overflow-hidden">
-              <Typography className="text-sm font-bold truncate text-slate-200">
+              <Typography className={`text-sm font-bold truncate ${
+                theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
+              }`}>
                 {user.firstName} {user.lastName}
               </Typography>
-              <Typography className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">
+              <Typography className={`text-[10px] font-black uppercase tracking-wider ${
+                theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'
+              }`}>
                 {user.role}
               </Typography>
             </Box>
@@ -171,7 +187,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               }`}
             >
               <span className="shrink-0 flex items-center justify-center">
-                {theme === 'dark' ? <LightModeIcon className="text-yellow-400" /> : <DarkModeIcon className="text-slate-500" />}
+                {theme === 'dark' ? <LightModeIcon className="text-yellow-400" /> : <DarkModeIcon className="text-slate-550" />}
               </span>
               {!collapsed && (
                 <span className="font-sans leading-none">{theme === 'dark' ? 'Mode Clair' : 'Mode Sombre'}</span>
@@ -184,7 +200,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             <button
               onClick={handleLogout}
               className={`w-full min-h-[48px] px-3.5 rounded-xl text-sm font-bold flex items-center gap-4 transition-premium cursor-pointer hover:bg-red-500/15 ${
-                theme === 'dark' ? 'text-red-400' : 'text-red-650'
+                theme === 'dark' ? 'text-red-400' : 'text-red-600'
               }`}
             >
               <span className="shrink-0 flex items-center justify-center">
