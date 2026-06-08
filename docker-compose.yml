@@ -31,7 +31,7 @@ services:
       DATABASE_URL: mysql://root:rootpassword@db:3306/salestrack
       JWT_SECRET: sales_track_secure_jwt_secret_key_2026
     volumes:
-      - uploads_data:/app/uploads
+      - uploads_data:/uploads
     depends_on:
       db:
         condition: service_healthy

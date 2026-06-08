@@ -125,7 +125,7 @@ Photos prises sur le terrain par le commercial lors d'une visite.
 | `visiteId` | `Int` (FK, Cascade) | Visite associée à la photo (suppression auto si visite effacée). |
 | `commercialId` | `Int` (FK) | Commercial auteur de la photo. |
 | `clientId` | `Int` (FK) | Client concerné. |
-| `cheminFichier` | `String` | Chemin relatif d'accès sur le serveur (ex: `/uploads/photo-1700...png`). |
+| `cheminFichier` | `String` | Chemin relatif d'accès sur le serveur (ex: `/uploads/visite-15/photo-1700...png`). |
 | `legende` | `String?` (Null) | Texte descriptif de la photo. |
 | `latitude` | `Float?` (Null) | Coordonnées GPS de la prise de vue. |
 | `longitude` | `Float?` (Null) | Coordonnées GPS de la prise de vue. |
@@ -144,4 +144,7 @@ Photos prises sur le terrain par le commercial lors d'une visite.
    - Le montant `totalLigneHT` est calculé côté backend lors de l'insertion de chaque ligne de commande.
    - Le montant `totalHT` d'une commande est la somme exacte des `totalLigneHT`. Ce montant est recalculé et enregistré dans la table `Commande` par le serveur Express pour éviter les fraudes ou les erreurs d'arrondi du client frontend.
 4. **Purge des Photos** :
-   - La table `Photo` sert à enregistrer les images stockées dans `/uploads`. Un script planifié supprime de la base de données et du stockage disque les enregistrements de photos dont la date `createdAt` est supérieure à 30 jours.
+   - La table `Photo` sert à enregistrer les images stockées dans `/uploads`. Un script planifié supprime de la base de données et du stockage disque les enregistrements de photos dont la date `createdAt` est supérieure à 30 jours. Les dossiers vides de visites associées sont également supprimés.
+5. **Classement des Photos par Visite** :
+   - Lors de la création ou de la mise à jour d'une visite, toutes les photos liées sont déplacées dans un sous-dossier spécifique nommé par ID de visite : `/uploads/visite-<id>/`. Lors de la suppression d'une visite, son dossier de photos associé est entièrement effacé du disque.
+

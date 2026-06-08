@@ -2,6 +2,73 @@ const prisma = require('../utils/db');
 const fs = require('fs');
 const path = require('path');
 
+const UPLOADS_DIR = path.join(__dirname, '../../../uploads');
+
+async function movePhotosToVisitFolder(visiteId, clientId, commercialId, photos) {
+  if (!photos || !Array.isArray(photos) || photos.length === 0) return;
+
+  const visitDirName = `visite-${visiteId}`;
+  const visitDirPath = path.join(UPLOADS_DIR, visitDirName);
+
+  // Ensure visit subfolder exists in uploads
+  if (!fs.existsSync(visitDirPath)) {
+    fs.mkdirSync(visitDirPath, { recursive: true });
+  }
+
+  for (const photo of photos) {
+    const filename = path.basename(photo.cheminFichier);
+    const srcPath = path.join(UPLOADS_DIR, filename);
+    const destPath = path.join(visitDirPath, filename);
+
+    let finalChemin = photo.cheminFichier;
+
+    // If file is in uploads root, move it to visit folder
+    if (fs.existsSync(srcPath)) {
+      try {
+        fs.renameSync(srcPath, destPath);
+        finalChemin = `/uploads/${visitDirName}/${filename}`;
+      } catch (err) {
+        console.error(`Error moving photo ${filename} to visit folder:`, err);
+      }
+    } else {
+      // If the file was already in the subfolder or moved previously
+      const subfolderPath = path.join(visitDirPath, filename);
+      if (fs.existsSync(subfolderPath)) {
+        finalChemin = `/uploads/${visitDirName}/${filename}`;
+      }
+    }
+
+    // Insert or update legend
+    const existingPhoto = await prisma.photo.findFirst({
+      where: {
+        visiteId: Number(visiteId),
+        cheminFichier: finalChemin
+      }
+    });
+
+    if (!existingPhoto) {
+      await prisma.photo.create({
+        data: {
+          visiteId: Number(visiteId),
+          commercialId: Number(commercialId),
+          clientId: Number(clientId),
+          cheminFichier: finalChemin,
+          legende: photo.legende || null,
+          latitude: photo.latitude ? parseFloat(photo.latitude) : null,
+          longitude: photo.longitude ? parseFloat(photo.longitude) : null,
+        }
+      });
+    } else {
+      if (existingPhoto.legende !== photo.legende) {
+        await prisma.photo.update({
+          where: { id: existingPhoto.id },
+          data: { legende: photo.legende || null }
+        });
+      }
+    }
+  }
+}
+
 /**
  * Get all visits based on user role and query filters.
  */
@@ -189,22 +256,8 @@ async function createVisit(data, currentUser) {
     }
   });
 
-  // Sync uploaded photos if any
-  if (photos && Array.isArray(photos) && photos.length > 0) {
-    for (const photo of photos) {
-      await prisma.photo.create({
-        data: {
-          visiteId: newVisite.id,
-          commercialId: currentUser.id,
-          clientId: Number(clientId),
-          cheminFichier: photo.cheminFichier,
-          legende: photo.legende || null,
-          latitude: photo.latitude ? parseFloat(photo.latitude) : null,
-          longitude: photo.longitude ? parseFloat(photo.longitude) : null,
-        }
-      });
-    }
-  }
+  // Sync uploaded photos if any and organize them in subfolders
+  await movePhotosToVisitFolder(newVisite.id, clientId, currentUser.id, photos);
 
   // Reload details to include photos
   return getVisitById(newVisite.id, currentUser);
@@ -274,12 +327,14 @@ async function updateVisit(id, data, currentUser) {
   // Sync uploaded photos if photos list is provided
   if (photos && Array.isArray(photos)) {
     const oldPhotos = await prisma.photo.findMany({ where: { visiteId: Number(id) } });
-    const newPaths = photos.map(p => p.cheminFichier);
+    const newBasenames = photos.map(p => path.basename(p.cheminFichier));
 
     // Remove photos that are not present in the new set
     for (const oldPhoto of oldPhotos) {
-      if (!newPaths.includes(oldPhoto.cheminFichier)) {
-        const filePath = path.join(__dirname, '../../', oldPhoto.cheminFichier);
+      const oldFilename = path.basename(oldPhoto.cheminFichier);
+      if (!newBasenames.includes(oldFilename)) {
+        const relativePath = oldPhoto.cheminFichier.replace(/^\/uploads\//, '');
+        const filePath = path.join(UPLOADS_DIR, relativePath);
         if (fs.existsSync(filePath)) {
           try {
             fs.unlinkSync(filePath);
@@ -291,28 +346,8 @@ async function updateVisit(id, data, currentUser) {
       }
     }
 
-    // Insert or update remaining photos
-    for (const photo of photos) {
-      const exists = oldPhotos.find(op => op.cheminFichier === photo.cheminFichier);
-      if (!exists) {
-        await prisma.photo.create({
-          data: {
-            visiteId: Number(id),
-            commercialId: updatedVisite.commercialId,
-            clientId: updatedVisite.clientId,
-            cheminFichier: photo.cheminFichier,
-            legende: photo.legende || null,
-            latitude: photo.latitude ? parseFloat(photo.latitude) : null,
-            longitude: photo.longitude ? parseFloat(photo.longitude) : null,
-          }
-        });
-      } else if (exists.legende !== photo.legende) {
-        await prisma.photo.update({
-          where: { id: exists.id },
-          data: { legende: photo.legende || null }
-        });
-      }
-    }
+    // Move new photos and insert/update database records
+    await movePhotosToVisitFolder(id, updatedVisite.clientId, updatedVisite.commercialId, photos);
   }
 
   // Reload details
@@ -356,7 +391,8 @@ async function deleteVisit(id, currentUser) {
   // Delete all photos from filesystem
   if (visit.photos && visit.photos.length > 0) {
     for (const photo of visit.photos) {
-      const filePath = path.join(__dirname, '../../', photo.cheminFichier);
+      const relativePath = photo.cheminFichier.replace(/^\/uploads\//, '');
+      const filePath = path.join(UPLOADS_DIR, relativePath);
       if (fs.existsSync(filePath)) {
         try {
           fs.unlinkSync(filePath);
@@ -364,6 +400,16 @@ async function deleteVisit(id, currentUser) {
           console.error(`Error deleting file: ${filePath}`, e);
         }
       }
+    }
+  }
+
+  // Delete the visit subfolder if it exists
+  const visitDir = path.join(UPLOADS_DIR, `visite-${id}`);
+  if (fs.existsSync(visitDir)) {
+    try {
+      fs.rmSync(visitDir, { recursive: true, force: true });
+    } catch (e) {
+      console.error(`Error deleting directory: ${visitDir}`, e);
     }
   }
 
@@ -390,7 +436,8 @@ async function cleanupOldPhotos() {
 
   let deletedCount = 0;
   for (const photo of oldPhotos) {
-    const filePath = path.join(__dirname, '../../', photo.cheminFichier);
+    const relativePath = photo.cheminFichier.replace(/^\/uploads\//, '');
+    const filePath = path.join(UPLOADS_DIR, relativePath);
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
@@ -403,6 +450,22 @@ async function cleanupOldPhotos() {
       where: { id: photo.id }
     });
     deletedCount++;
+  }
+
+  // Cleanup empty visit directories
+  try {
+    const items = fs.readdirSync(UPLOADS_DIR);
+    for (const item of items) {
+      const itemPath = path.join(UPLOADS_DIR, item);
+      if (fs.statSync(itemPath).isDirectory() && item.startsWith('visite-')) {
+        const subFiles = fs.readdirSync(itemPath);
+        if (subFiles.length === 0) {
+          fs.rmdirSync(itemPath);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to cleanup empty visit folders:', err);
   }
 
   return { success: true, deletedCount };

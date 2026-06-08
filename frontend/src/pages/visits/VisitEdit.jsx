@@ -140,28 +140,31 @@ export default function VisitEdit() {
 
   // Image compression & upload
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setPhotoCompressing(true);
     try {
-      const cheminFichier = await compressAndUploadPhoto(file);
-      
-      setPhotos(prev => [
-        ...prev,
-        {
+      const uploadedPhotos = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const cheminFichier = await compressAndUploadPhoto(file);
+        uploadedPhotos.push({
           cheminFichier,
           legende: '',
           latitude: latitude || null,
           longitude: longitude || null
-        }
-      ]);
-      setToast({ open: true, message: 'Photo compressée et importée avec succès.', severity: 'success' });
+        });
+      }
+      
+      setPhotos(prev => [...prev, ...uploadedPhotos]);
+      setToast({ open: true, message: `${files.length} photo(s) compressée(s) et importée(s) avec succès.`, severity: 'success' });
     } catch (err) {
       console.error('Photo upload error:', err);
-      setToast({ open: true, message: err.message || 'Erreur lors du traitement de l\'image.', severity: 'error' });
+      setToast({ open: true, message: err.message || 'Erreur lors du traitement des images.', severity: 'error' });
     } finally {
       setPhotoCompressing(false);
+      e.target.value = '';
     }
   };
 
@@ -547,6 +550,7 @@ export default function VisitEdit() {
                 type="file"
                 onChange={handlePhotoUpload}
                 disabled={photoCompressing}
+                multiple
               />
               <label htmlFor="visit-photo-file-edit" className="block w-full">
                 <Button
