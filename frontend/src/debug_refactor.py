@@ -2,9 +2,8 @@ import subprocess
 import os
 import re
 
-git_path = "frontend/src/pages/users/UserEdit.jsx"
+git_path = "frontend/src/pages/clients/ClientEdit.jsx"
 
-# Get original content from aed5e38
 proc = subprocess.run(
     ["git", "show", f"aed5e38:{git_path}"],
     capture_output=True,
@@ -125,21 +124,27 @@ def replace_set_toast_calls(content):
             idx += 8
     return content
 
-# 1. Clean imports
 content = cleanup_mui_imports(content)
-# 2. Remove useState toast
 content = re.sub(r'const\s*\[\s*toast\s*,\s*setToast\s*\]\s*=\s*useState\s*\(\s*\{[\s\S]*?\}\s*\)\s*;?\n?', '', content)
-
-# 3. Replace setToast calls (now before handleToastClose removal!)
 content = replace_set_toast_calls(content)
-
-# 4. Remove handleToastClose
 content = re.sub(r'const\s+handleToastClose\s*=\s*\(\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?', '', content)
 
-# 5. Remove JSX
+show_toast_pattern = r'const\s+showToast\s*=\s*\(\s*message\s*,\s*type\s*=\s*[\'"]success[\'"]\s*\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?'
+if "const showToast" in content:
+    new_show_toast = """const showToast = (message, type = 'success') => {
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'warning') {
+      toast(message, { icon: '⚠️' });
+    } else {
+      toast.error(message);
+    }
+  };
+"""
+    content = re.sub(show_toast_pattern, new_show_toast, content)
+
 content = remove_toast_jsx(content)
 
-print("\n--- Final Output ---")
-final_lines = content.splitlines()
-for i in range(70, min(95, len(final_lines))):
-    print(f"{i+1}: {final_lines[i]}")
+with open("debug_output.txt", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Wrote debug_output.txt successfully!")

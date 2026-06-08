@@ -30,9 +30,7 @@ def cleanup_mui_imports(content):
         if not parts:
             return ""
         return 'import { ' + ', '.join(parts) + ' } from \'@mui/material\''
-    # Handle single or double quotes
     content = re.sub(r"import\s*\{\s*([^}]+?)\s*\}\s*from\s*['\"]@mui/material['\"]", repl, content)
-    # Also handle multiline imports
     content = re.sub(r"import\s*\{\s*([^}]+?)\s*\}\s*from\s*['\"]@mui/material['\"];?", repl, content)
     return content
 
@@ -46,10 +44,8 @@ def remove_toast_jsx(content):
                 if end_idx != -1:
                     start_idx = idx
                     pre_sub = content[:idx]
-                    # Find the last occurrence of {/* in pre_sub, and if it's within 150 chars, use it.
                     last_comment_idx = pre_sub.rfind('{/*')
                     if last_comment_idx != -1 and (idx - last_comment_idx) < 150:
-                        # Find the corresponding closing comment block
                         close_comment_idx = pre_sub.find('*/}', last_comment_idx)
                         if close_comment_idx != -1:
                             start_idx = last_comment_idx
@@ -169,6 +165,24 @@ for f in files:
     except Exception as e:
         print(f"Error fetching original content for {f}: {e}")
         continue
+
+    # Literal replacement of showToast block if present to avoid nested braces parsing issues
+    old_show_toast = """  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(t => ({ ...t, show: false })), 4000);
+  };"""
+
+    new_show_toast = """  const showToast = (message, type = 'success') => {
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'warning') {
+      toast(message, { icon: '⚠️' });
+    } else {
+      toast.error(message);
+    }
+  };"""
+
+    content = content.replace(old_show_toast, new_show_toast)
         
     # Clean up MUI imports
     content = cleanup_mui_imports(content)
@@ -181,21 +195,6 @@ for f in files:
     
     # Remove handleToastClose function
     content = re.sub(r'const\s+handleToastClose\s*=\s*\(\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?', '', content)
-    
-    # Replace showToast definition in ClientCreate/ClientEdit if present
-    show_toast_pattern = r'const\s+showToast\s*=\s*\(\s*message\s*,\s*type\s*=\s*[\'"]success[\'"]\s*\)\s*=>\s*\{[\s\S]*?\}\s*;?\n?'
-    if "const showToast" in content:
-        new_show_toast = """const showToast = (message, type = 'success') => {
-    if (type === 'success') {
-      toast.success(message);
-    } else if (type === 'warning') {
-      toast(message, { icon: '⚠️' });
-    } else {
-      toast.error(message);
-    }
-  };
-"""
-        content = re.sub(show_toast_pattern, new_show_toast, content)
         
     # Remove JSX
     content = remove_toast_jsx(content)

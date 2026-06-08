@@ -33,9 +33,6 @@ export default function ClientCreate() {
       toast.error(message);
     }
   };
-);
-    setTimeout(() => , 4000);
-  };
 
   const handleSubmit = async (formData) => {
     setSubmitting(true);
