@@ -247,7 +247,7 @@ async function exportCommandes(req, res) {
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="commandes_export.csv"');
-    return res.status(200).send('\ufeff' + csvContent);
+    return res.status(200).send(csvContent);
   } catch (error) {
     console.error('exportCommandes controller error:', error);
     return res.status(500).json({

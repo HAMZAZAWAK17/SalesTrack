@@ -317,7 +317,7 @@ async function exportVisits(req, res) {
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="visites_export.csv"');
-    return res.status(200).send('\ufeff' + csvContent);
+    return res.status(200).send(csvContent);
   } catch (error) {
     console.error('exportVisits controller error:', error);
     return res.status(500).json({
