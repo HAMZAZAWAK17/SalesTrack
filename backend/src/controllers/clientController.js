@@ -341,7 +341,34 @@ async function exportClients(req, res) {
 }
 
 function convertClientsToCSV(clients) {
-  const headers = ['Code', 'Raison Sociale', 'Téléphone', 'Email', 'Adresse', 'Ville', 'Canal', 'Catégorie', 'Statut', 'Commercial Nom', 'Commercial Email', 'Notes'];
+  const headers = ['Code', 'Raison Sociale', 'Téléphone', 'Email', 'Adresse', 'Ville', 'Canal de Distribution', 'Catégorie', 'Statut', 'Commercial Nom', 'Commercial Email', 'Notes'];
+  
+  const getChannelLabel = (val) => {
+    return val === 'ON_TRADE' ? 'On Trade' : (val === 'OFF_TRADE' ? 'Off Trade' : val);
+  };
+  
+  const getCategoryLabel = (val) => {
+    const map = {
+      HOTEL: 'Hôtel',
+      RESTAURANT: 'Restaurant',
+      CAFE: 'Café',
+      GROCERY: 'Épicerie',
+      SUPERMARKET: 'Supermarché',
+      TRADITIONAL: 'Traditionnel',
+      OTHER: 'Autre'
+    };
+    return map[val] || val;
+  };
+
+  const getStatusLabel = (val) => {
+    const map = {
+      ACTIVE: 'Actif',
+      INACTIVE: 'Inactif',
+      PROSPECT: 'Prospect'
+    };
+    return map[val] || val;
+  };
+
   const rows = clients.map(c => [
     c.code,
     c.companyName,
@@ -349,17 +376,18 @@ function convertClientsToCSV(clients) {
     c.email,
     c.address,
     c.city,
-    c.distributionChannel,
-    c.category,
-    c.status,
+    getChannelLabel(c.distributionChannel),
+    getCategoryLabel(c.category),
+    getStatusLabel(c.status),
     c.commercial ? `${c.commercial.firstName} ${c.commercial.lastName}` : '',
     c.commercial ? c.commercial.email : '',
     c.notes || ''
   ]);
   
   return [
-    headers.join(','),
-    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(','))
+    'sep=;',
+    headers.join(';'),
+    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(';'))
   ].join('\n');
 }
 

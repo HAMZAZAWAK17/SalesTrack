@@ -329,25 +329,63 @@ async function exportVisits(req, res) {
 }
 
 function convertVisitsToCSV(visits) {
-  const headers = ['ID', 'Date', 'Client Code', 'Client Nom', 'Commercial', 'Objet', 'Statut Commande', 'Raison Non Commande', 'Commentaire', 'Latitude', 'Longitude'];
+  const headers = ['ID Visite', 'Date & Heure', 'Code Client', 'Nom Client', 'Commercial', 'Objet de la Visite', 'Statut Commande', 'Raison de Non-Commande', 'Commentaire / Compte-rendu', 'Latitude', 'Longitude'];
+  
+  const getObjetLabel = (val) => {
+    const map = {
+      PRISE_COMMANDE: 'Prise de commande',
+      SUIVI_CLIENT: 'Suivi client',
+      RECOUVREMENT: 'Recouvrement',
+      VISIBILITE_MARQUE: 'Visibilité marque',
+      IMPLANTATION_PRODUIT: 'Implantation produit',
+      NEGOCIATION: 'Négociation',
+      LIVRAISON: 'Livraison',
+      RELANCE: 'Relance',
+      AUTRE: 'Autre'
+    };
+    return map[val] || val;
+  };
+
+  const getRaisonLabel = (val) => {
+    const map = {
+      STOCK_NON_ECOULE: 'Stock non écoulé',
+      TROP_STOCK: 'Trop de stock',
+      BAISSE_ACTIVITE: 'Baisse d\'activité',
+      CHANGEMENT_FOURNISSEUR: 'Changement de fournisseur',
+      PRIX_ELEVE: 'Prix trop élevé',
+      CLIENT_ABSENT: 'Client absent',
+      ATTENTE_VALIDATION: 'Attente validation manager',
+      PROBLEME_LIVRAISON: 'Problème lors de la livraison précédente',
+      AUTRE: 'Autre'
+    };
+    return map[val] || val;
+  };
+
+  const formatDate = (dateVal) => {
+    const date = new Date(dateVal);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + 
+           date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  };
+
   const rows = visits.map(v => [
     v.id,
-    new Date(v.dateDebut).toISOString(),
+    formatDate(v.dateDebut),
     v.client?.code || '',
     v.client?.companyName || '',
     `${v.commercial?.firstName || ''} ${v.commercial?.lastName || ''}`,
-    v.objet,
-    v.statutCommande,
-    v.raisonNonCommande || '',
+    getObjetLabel(v.objet),
+    v.statutCommande === 'COMMANDE' ? 'Commande prise' : 'Pas de commande',
+    getRaisonLabel(v.raisonNonCommande),
     (v.commentaire || '').replace(/"/g, '""').replace(/\n/g, ' '),
     v.latitude || '',
     v.longitude || ''
   ]);
   
-  // Format as CSV
   return [
-    headers.join(','),
-    ...rows.map(r => r.map(val => `"${val}"`).join(','))
+    'sep=;',
+    headers.join(';'),
+    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(';'))
   ].join('\n');
 }
 

@@ -259,21 +259,46 @@ async function exportCommandes(req, res) {
 }
 
 function convertCommandesToCSV(commandes) {
-  const headers = ['ID', 'Date', 'Client Code', 'Client Nom', 'Commercial', 'Type', 'Statut', 'Total HT'];
+  const headers = ['ID Commande', 'Date d\'Émission', 'Code Client', 'Nom Client', 'Commercial', 'Type de Document', 'Statut', 'Total HT (€)'];
+  
+  const getStatusLabel = (val) => {
+    const map = {
+      VALIDEE: 'Validée',
+      TRAITEE: 'Traitée',
+      EN_ATTENTE: 'En attente',
+      BROUILLON: 'Brouillon',
+      ANNULEE: 'Annulée'
+    };
+    return map[val] || val;
+  };
+
+  const formatDate = (dateVal) => {
+    const date = new Date(dateVal);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + 
+           date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatCurrency = (val) => {
+    const num = Number(val) || 0;
+    return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const rows = commandes.map(cmd => [
     cmd.id,
-    new Date(cmd.createdAt).toISOString(),
+    formatDate(cmd.createdAt),
     cmd.client?.code || '',
     cmd.client?.companyName || '',
     cmd.commercial ? `${cmd.commercial.firstName} ${cmd.commercial.lastName}` : '',
-    cmd.type,
-    cmd.statut,
-    cmd.totalHT
+    cmd.type === 'COMMANDE' ? 'Commande Ferme' : 'Devis / Proposition',
+    getStatusLabel(cmd.statut),
+    formatCurrency(cmd.totalHT)
   ]);
   
   return [
-    headers.join(','),
-    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(','))
+    'sep=;',
+    headers.join(';'),
+    ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""').replace(/\n/g, ' ')}"`).join(';'))
   ].join('\n');
 }
 
