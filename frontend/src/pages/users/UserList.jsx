@@ -104,9 +104,7 @@ export default function UserList() {
     }
   };
 
-  );
-  };
-
+  
   // Calculate displayed range text
   const fromRecord = totalUsers === 0 ? 0 : page * rowsPerPage + 1;
   const toRecord = Math.min((page + 1) * rowsPerPage, totalUsers);

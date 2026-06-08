@@ -286,9 +286,7 @@ export default function VisitCreate() {
     }
   };
 
-  );
-  };
-
+  
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-6">
       {/* Header back */}

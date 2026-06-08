@@ -291,9 +291,7 @@ export default function VisitEdit() {
     }
   };
 
-  );
-  };
-
+  
   if (loading) {
     return (
       <Box className="h-full w-full flex flex-col items-center justify-center py-20 gap-3">

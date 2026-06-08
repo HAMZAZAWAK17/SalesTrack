@@ -138,9 +138,7 @@ export default function ClientList() {
     }
   };
 
-  );
-  };
-
+  
   const handleExportCSV = async () => {
     try {
       const token = localStorage.getItem('salestrack_token');

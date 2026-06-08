@@ -67,9 +67,7 @@ export default function Profile() {
     }
   };
 
-  );
-  };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 

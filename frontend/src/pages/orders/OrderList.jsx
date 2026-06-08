@@ -128,9 +128,7 @@ export default function OrderList() {
     }
   };
 
-  );
-  };
-
+  
   const handleExportCSV = async () => {
     try {
       const token = localStorage.getItem('salestrack_token');

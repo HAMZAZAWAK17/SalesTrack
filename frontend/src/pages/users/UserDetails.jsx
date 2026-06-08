@@ -70,9 +70,7 @@ export default function UserDetails() {
     );
   };
 
-  );
-  };
-
+  
   return (
     <div className={`min-h-screen w-full p-4 md:p-8 relative overflow-hidden transition-colors duration-300 font-sans ${
       theme === 'dark' ? 'bg-slate-950 text-slate-100 grid-pattern' : 'bg-slate-50 text-slate-800 grid-pattern-light'

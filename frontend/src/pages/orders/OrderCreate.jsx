@@ -172,9 +172,7 @@ export default function OrderCreate() {
     }
   };
 
-  );
-  };
-
+  
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6">
       {/* Header back */}
